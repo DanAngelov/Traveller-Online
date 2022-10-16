@@ -1,5 +1,6 @@
 package com.example.travelleronline.categories;
 
+import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,17 +12,19 @@ public class CategoryController extends MasterController {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
     @PostMapping("/create")
-    public void createCategory(@RequestBody Category c){
+    public void createCategory(@RequestBody Category c) {
         categoryRepository.save(c);
     }
 
     @GetMapping()
-    public List<Category> getAllCategories(){
+    public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
+
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable long id){
+    public Category getCategoryById(@PathVariable long id) {
         return categoryRepository.findById(id).orElseThrow();//TODO make exception return proper status
     }
 
@@ -33,17 +36,15 @@ public class CategoryController extends MasterController {
     }
 
     @DeleteMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
-    public void deleteCategoryById(@PathVariable long id){
+    public void deleteCategoryById(@PathVariable long id) {
         //TODO Validate data
         categoryRepository.deleteById(id);
     }
 
     @DeleteMapping(headers = "password=4kd2!kd7@SE1")
-    public void deleteAllCategories(){
+    public void deleteAllCategories() {
         categoryRepository.deleteAll();
     }
-
-
 
 
 }

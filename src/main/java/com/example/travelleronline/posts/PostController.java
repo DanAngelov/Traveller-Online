@@ -1,5 +1,6 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
