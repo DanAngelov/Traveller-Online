@@ -1,8 +1,8 @@
-package com.example.travelleronline.posts;
+package com.example.travelleronline.categories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post,Long> {
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 }
