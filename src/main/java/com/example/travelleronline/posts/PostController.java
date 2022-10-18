@@ -1,6 +1,5 @@
 package com.example.travelleronline.posts;
 
-import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,45 +8,35 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
-public class PostController extends MasterController {
+public class PostController {
 
     @Autowired
-    private PostRepository postRepository;
+    private PostService postService;
 
-    @PostMapping("/create")
-    public void createPost(@RequestBody Post p){
-        p.setDateOfUpload(LocalDateTime.now());
-        postRepository.save(p);
-        //TODO validate
-    }
+//    @PostMapping()
+//    public PostDTO createPost(@RequestBody PostDTO p){
+//       return postService.createPost();
+//    }
     @GetMapping()
-    public List<Post> getAllPosts(){
-        return postRepository.findAll();
+    public List<PostDTO> getAllPosts(){
+        return postService.getAllPosts();
     }
     @GetMapping("/{id}")
-    public Post getPostById(@PathVariable long id){
-        return postRepository.findById(id).orElseThrow(); //TODO make exception return proper status
+    public PostDTO getPostById(@PathVariable long id){
+        return postService.getPostById(id);
     }
-
     @DeleteMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
     public void deletePostById(@PathVariable long id){
-        //TODO validate
-        postRepository.deleteById(id);
+        postService.deletePostById(id);
     }
     @DeleteMapping(headers = "password=4kd2!kd7@SE1")
     public void deleteAllPosts(){
-        postRepository.deleteAll();
+        postService.deleteAllPosts();
     }
-    @PutMapping("/{id}")
-    public void editPost(@PathVariable long id, @RequestBody Post p){
-        //TODO validate data
-        Post post = postRepository.findById(id).orElseThrow(); //TODO make exception return proper status
-        post.setClipUri(p.getClipUri());
-        post.setDescription(p.getDescription());
-        post.setTitle(p.getTitle());
-        post.setCategoryId(p.getCategoryId());
-        postRepository.save(post);
-    }
+//    @PutMapping("/{id}")
+//    public PostDTO editPost(@PathVariable long id, @RequestBody PostDTO dto){
+//        return postService.editPost(id, dto);
+//    }
 
 
 

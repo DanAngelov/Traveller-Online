@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/post-categories")
+@RequestMapping("/categories")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping(value = "/create", headers = "password=4kd2!kd7@SE1")
+    @PostMapping(headers = "password=4kd2!kd7@SE1")
     public CategoryDTO createCategory(@RequestBody CategoryDTO dto) {
         return categoryService.createCategory(dto);
     }
