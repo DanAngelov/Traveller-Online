@@ -18,32 +18,34 @@ public abstract class MasterController {
     @Autowired
     protected ModelMapper modelMapper;
 
-    @ExceptionHandler(BadRequestException.class)
+    @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     private ErrorDto handleBadRequest(Exception e){
-        ErrorDto dto = new ErrorDto();
-        dto.setMessage(e.getMessage());
-        dto.setStatus(HttpStatus.BAD_REQUEST.value());
-        dto.setTime(LocalDateTime.now());
-        return dto;
+        return buildErrorInfo(e,HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
+    @ExceptionHandler(value = UnauthorizedException.class)
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     private ErrorDto handleUnauthorized(Exception e){
-        ErrorDto dto = new ErrorDto();
-        dto.setMessage(e.getMessage());
-        dto.setStatus(HttpStatus.UNAUTHORIZED.value());
-        dto.setTime(LocalDateTime.now());
-        return dto;
+        return buildErrorInfo(e, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(NotFoundException.class)
+    @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     private ErrorDto handleNotFound(Exception e){
+        return buildErrorInfo(e, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = Exception.class)
+    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+    private ErrorDto handleAllOther(Exception e){
+        return buildErrorInfo(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ErrorDto buildErrorInfo(Exception e, HttpStatus status) {
         ErrorDto dto = new ErrorDto();
+        dto.setStatus(status.value());
         dto.setMessage(e.getMessage());
-        dto.setStatus(HttpStatus.NOT_FOUND.value());
         dto.setTime(LocalDateTime.now());
         return dto;
     }
