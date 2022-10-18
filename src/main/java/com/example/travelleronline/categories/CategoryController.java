@@ -1,5 +1,6 @@
 package com.example.travelleronline.categories;
 
+import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
-public class CategoryController {
+public class CategoryController extends MasterController {
 
     @Autowired
     private CategoryService categoryService;
@@ -23,17 +24,17 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public CategoryDTO getCategoryById(@PathVariable long id) {
+    public CategoryDTO getCategoryById(@PathVariable int id) {
         return categoryService.getCategoryById(id);
     }
 
     @PutMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
-    public CategoryDTO editCategory(@RequestBody CategoryDTO dto, @PathVariable long id) {
+    public CategoryDTO editCategory(@RequestBody CategoryDTO dto, @PathVariable int id) {
         return categoryService.editCategory(dto, id);
     }
 
     @DeleteMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
-    public void deleteCategoryById(@PathVariable long id) {
+    public void deleteCategoryById(@PathVariable int id) {
         categoryService.deleteCategoryById(id);
     }
 

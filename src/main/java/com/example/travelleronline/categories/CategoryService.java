@@ -29,12 +29,12 @@ public class CategoryService {
         return  categoryRepository.findAll().stream().map(c -> modelMapper.map(c,CategoryDTO.class)).collect(Collectors.toList());
     }
 
-    public CategoryDTO getCategoryById(long id) {
+    public CategoryDTO getCategoryById(int id) {
         Category c = categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
         return modelMapper.map(c, CategoryDTO.class);
     }
 
-    public CategoryDTO editCategory(CategoryDTO dto, long id) {
+    public CategoryDTO editCategory(CategoryDTO dto, int id) {
         Category existingCategory = categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
         validateCategoryName(dto.getName());
         existingCategory.setName(dto.getName());
@@ -42,7 +42,7 @@ public class CategoryService {
         return modelMapper.map(existingCategory, CategoryDTO.class);
     }
 
-    public void deleteCategoryById(long id) {
+    public void deleteCategoryById(int id) {
         categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
         categoryRepository.deleteById(id);
     }
@@ -56,7 +56,7 @@ public class CategoryService {
             throw new BadRequestException("Category can not be null.");
         }
         if(category.length() < 3 || category.isBlank() || category.length() > 10) {
-            throw new BadRequestException("Category name must be between 3 and 10 letters");
+            throw new BadRequestException("Category name must be between 3 and 100 letters");
         }
         List<Category> categories = categoryRepository.findAll();
         for (Category c : categories) {
@@ -64,6 +64,10 @@ public class CategoryService {
                 throw new BadRequestException("Category name already exists.");
             }
         }
+    }
+
+    public List<Category> categories () {
+        return categoryRepository.findAll();
     }
 
 }

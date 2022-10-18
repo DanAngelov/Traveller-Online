@@ -1,4 +1,7 @@
 package com.example.travelleronline.comments;
 
-public class CommentController {
+import com.example.travelleronline.util.MasterController;
+
+public class CommentController extends MasterController {
+
 }

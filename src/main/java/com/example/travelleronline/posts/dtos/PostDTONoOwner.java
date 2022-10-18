@@ -1,21 +1,20 @@
-package com.example.travelleronline.posts;
+package com.example.travelleronline.posts.dtos;
 
 import com.example.travelleronline.categories.Category;
-import com.example.travelleronline.users.User;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data
-public class PostDTO {
+public class PostDTONoOwner {
 
-    private long id;
-    private User owner;
+    private int id;
     private String title;
     private LocalDateTime dateOfUpload;
     private String clipUri;
     private String description;
     private Category categoryId;
-    private float locationLatitude;
-    private float locationLongitude;
+    private double locationLatitude;
+    private double locationLongitude;
 
 }

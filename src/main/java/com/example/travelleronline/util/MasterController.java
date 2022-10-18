@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-@RestControllerAdvice
+@RestController
 public abstract class MasterController {
 
     @Autowired
