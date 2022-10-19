@@ -29,8 +29,8 @@ public class Post {
     @Column
     private String description;
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category categoryId;
+    @JoinColumn(name = "id")
+    private Category category;
     @Column
     private double locationLatitude;
     @Column

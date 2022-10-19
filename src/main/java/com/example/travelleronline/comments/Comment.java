@@ -16,13 +16,13 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @ManyToOne
-    @JoinColumn(name = "posts_id")
+    @JoinColumn(name = "id", referencedColumnName= "posts")
     private Post postId;
     @Column
     private LocalDateTime createdAt;
     @Column
     private String content;
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id", referencedColumnName= "comments")
     private Post parentId;
 }

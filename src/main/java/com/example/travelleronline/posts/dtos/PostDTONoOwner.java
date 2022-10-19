@@ -13,7 +13,7 @@ public class PostDTONoOwner {
     private LocalDateTime dateOfUpload;
     private String clipUri;
     private String description;
-    private Category categoryId;
+    private Category category;
     private double locationLatitude;
     private double locationLongitude;
 

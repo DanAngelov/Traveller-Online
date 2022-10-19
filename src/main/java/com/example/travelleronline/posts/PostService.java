@@ -9,7 +9,9 @@ import com.example.travelleronline.posts.dtos.PostDTONoOwner;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +19,6 @@ import java.util.stream.Collectors;
 @Service
 public class PostService {
 
-    //TODO check if this is the right way to validate category.
     @Autowired
     private CategoryService categoryService;
     @Autowired
@@ -55,7 +56,7 @@ public class PostService {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
         existingPost.setTitle(dto.getTitle());
         existingPost.setDescription(dto.getDescription());
-        existingPost.setCategoryId(dto.getCategoryId());
+        existingPost.setCategory(dto.getCategory());
         existingPost.setClipUri(dto.getClipUri());
         existingPost.setLocationLatitude(dto.getLocationLatitude());
         existingPost.setLocationLongitude(dto.getLocationLongitude());
@@ -66,7 +67,7 @@ public class PostService {
     private void validatePost(Post p) {
         validateTitle(p.getTitle());
         validateDescription(p.getDescription());
-        validateCategoryId(p.getCategoryId());
+        validateCategory(p.getCategory());
 //        validateClipUri();//TODO Wednesday we will know how to validate this
         validateLocation(p.getLocationLatitude(),p.getLocationLongitude());
     }
@@ -78,7 +79,7 @@ public class PostService {
     }
 
     //TODO check if this is the right way to validate category.
-    private void validateCategoryId(Category category) {
+    private void validateCategory(Category category) {
         if(categoryService.getCategoryById(category.getId()) == null){
             throw new BadRequestException("No such category.");
         }
@@ -104,6 +105,22 @@ public class PostService {
             }
         }
     }
+
+//    public void uploadPostImageOrVideo(int pid, MultipartFile multipartFile) {
+//        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+//        //TODO validate if the user is logged in and if the user is the owner of the post.
+//        String name = System.nanoTime() + File.separator + "." ;
+//        if(multipartFile.getContentType().equals(){//picture types
+//            //save in pictures
+//        }
+//        else if(multipartFile.getContentType().equals()){ //video types
+//            //save in video url
+//        }
+//        else {
+//            //throw exception
+//        }
+//
+//    }
 
 
 }

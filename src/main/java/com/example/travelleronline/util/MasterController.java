@@ -46,7 +46,7 @@ public abstract class MasterController {
         dto.setStatus(status.value());
         dto.setMessage(e.getMessage());
         dto.setTime(LocalDateTime.now());
-        e.printStackTrace();
+        e.printStackTrace();//TODO save in log
         return dto;
     }
 

@@ -5,6 +5,7 @@ import com.example.travelleronline.posts.dtos.PostDTONoOwner;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -40,6 +41,10 @@ public class PostController extends MasterController {
         return postService.editPost(id, dto);
     }
 
+    @PostMapping("/{pid}/media")
+    public void uploadPostImageOrVideo(@PathVariable int pid,@RequestParam MultipartFile multipartFile){
+        postService.uploadPostImageOrVideo(pid, multipartFile);
+    }
 
 
 }
