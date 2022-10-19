@@ -5,8 +5,9 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class UserDtoProfile {
+public class ProfileDTO {
 
+    private String id;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;

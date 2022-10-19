@@ -14,9 +14,6 @@ import java.time.LocalDateTime;
 @RestController
 public abstract class MasterController {
 
-    @Autowired
-    protected ModelMapper modelMapper;
-
     @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     private ErrorDto handleBadRequest(BadRequestException e){
@@ -46,7 +43,7 @@ public abstract class MasterController {
         dto.setStatus(status.value());
         dto.setMessage(e.getMessage());
         dto.setTime(LocalDateTime.now());
-        e.printStackTrace();
+        e.printStackTrace(); //TODO add to log file
         return dto;
     }
 

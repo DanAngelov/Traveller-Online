@@ -6,6 +6,7 @@ import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.posts.dtos.PostDTONoOwner;
+import com.example.travelleronline.util.MasterService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class PostService {
+public class PostService extends MasterService {
 
     //TODO check if this is the right way to validate category.
     @Autowired
     private CategoryService categoryService;
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private ModelMapper modelMapper;
 
     public PostDTO createPost(Post p){
         validatePost(p);
