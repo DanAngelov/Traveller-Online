@@ -1,9 +1,10 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.users.User;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,10 +17,7 @@ public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    private int postId;
     @Column
     private String title;
     @Column
@@ -28,15 +26,25 @@ public class Post {
     private String clipUri;
     @Column
     private String description;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private Category category;
     @Column
     private double locationLatitude;
     @Column
     private double locationLongitude;
-    @OneToMany(mappedBy = "id")
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @OneToMany(mappedBy = "post")
     private List<Comment> comments;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
+
+    @OneToMany(mappedBy = "post")
+    private List<PostImage> postImages;
+
 
     //TODO pictures, likes/unlikes, dislikes/undislikes,
 

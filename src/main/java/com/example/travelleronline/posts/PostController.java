@@ -1,11 +1,10 @@
 package com.example.travelleronline.posts;
 
 import com.example.travelleronline.posts.dtos.PostDTO;
-import com.example.travelleronline.posts.dtos.PostDTONoOwner;
+import com.example.travelleronline.posts.dtos.PostWithoutCategoryDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,11 +16,11 @@ public class PostController extends MasterController {
     private PostService postService;
 
     @PostMapping()
-    public PostDTO createPost(@RequestBody Post p){
-       return postService.createPost(p);
+    public PostDTO createPost(@RequestBody PostDTO dto){
+       return postService.createPost(dto);
     }
     @GetMapping()
-    public List<PostDTONoOwner> getAllPosts(){
+    public List<PostWithoutCategoryDTO> getAllPosts(){
         return postService.getAllPosts();
     }
     @GetMapping("/{id}")
@@ -41,10 +40,6 @@ public class PostController extends MasterController {
         return postService.editPost(id, dto);
     }
 
-    @PostMapping("/{pid}/media")
-    public void uploadPostImageOrVideo(@PathVariable int pid,@RequestParam MultipartFile multipartFile){
-        postService.uploadPostImageOrVideo(pid, multipartFile);
-    }
 
 
 }

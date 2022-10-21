@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class WithoutPassDTO {
 
-    private int id;
+    private int userId;
     private String firstName;
     private String lastName;
     private String email;

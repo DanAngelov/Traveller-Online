@@ -6,9 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PostDTONoOwner {
+public class PostWithoutOwnerDTO {
 
-    private int id;
+    private int postId;
     private String title;
     private LocalDateTime dateOfUpload;
     private String clipUri;

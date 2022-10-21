@@ -29,15 +29,15 @@ public class UserService extends MasterService {
             throw new BadRequestException("Passwords mismatch.");
         }
         String firstName = dto.getFirstName();
-        validateName(firstName);
+//        validateName(firstName);
         String lastName = dto.getLastName();
-        validateName(lastName);
+//        validateName(lastName);
         String email = dto.getEmail();
-        validateEmail(email);
-        validatePhone(dto.getPhone());
-        validatePassword(password);
-        validateDateOfBirth(dto.getDateOfBirth());
-        validateGender(dto.getGender());
+//        validateEmail(email);
+//        validatePhone(dto.getPhone());
+//        validatePassword(password);
+//        validateDateOfBirth(dto.getDateOfBirth());
+//        validateGender(dto.getGender());
         if (userRepository.findAllByEmail(email).size() > 0) {
             throw new BadRequestException("An user with this e-mail " +
                     "has already been registered.");

@@ -1,6 +1,7 @@
 package com.example.travelleronline.comments;
 
 import com.example.travelleronline.posts.Post;
+import com.example.travelleronline.users.User;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,18 +12,24 @@ import java.time.LocalDateTime;
 @Table(name = "comments")
 public class Comment {
 
-    //TODO check if correctly mapped
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @ManyToOne
-    @JoinColumn(name = "id", referencedColumnName= "posts")
-    private Post postId;
+    private int commentId;
     @Column
     private LocalDateTime createdAt;
     @Column
     private String content;
+    @Column
+    private int parentId;
+
     @ManyToOne
-    @JoinColumn(name = "id", referencedColumnName= "comments")
-    private Post parentId;
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+
 }

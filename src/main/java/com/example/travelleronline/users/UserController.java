@@ -39,7 +39,7 @@ public class UserController extends MasterController {
         }
         ProfileDTO result = userService.login(dto);
         s.setAttribute(LOGGED, true);
-        s.setAttribute(USER_ID, result.getId());
+        s.setAttribute(USER_ID, result.getUserId());
         return result;
     }
 

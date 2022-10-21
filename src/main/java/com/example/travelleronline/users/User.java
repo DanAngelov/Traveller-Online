@@ -1,10 +1,13 @@
 package com.example.travelleronline.users;
 
+import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.posts.Post;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "users")
 @Data
@@ -12,7 +15,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int userId;
     @Column
     private String firstName;
     @Column
@@ -33,5 +36,11 @@ public class User {
     private LocalDateTime createdAt;
     @Column
     private boolean isVerified;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> comments;
 
 }
