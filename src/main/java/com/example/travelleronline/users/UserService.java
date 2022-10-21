@@ -1,26 +1,32 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.BadRequestException;
+import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.users.dtos.LoginDTO;
-import com.example.travelleronline.users.dtos.ProfileDTO;
-import com.example.travelleronline.users.dtos.RegisterDTO;
-import com.example.travelleronline.users.dtos.WithoutPassDTO;
+import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
+import com.example.travelleronline.util.TokenCoder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService extends MasterService {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private JavaMailSender emailSender;
 
 
     public WithoutPassDTO register(RegisterDTO dto) {
@@ -28,60 +34,166 @@ public class UserService extends MasterService {
         if (!password.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
         }
-        String firstName = dto.getFirstName();
-        validateName(firstName);
-        String lastName = dto.getLastName();
-        validateName(lastName);
+        password = password.trim();
+
+        validateName(dto.getFirstName());
+        validateName(dto.getLastName());
         String email = dto.getEmail();
         validateEmail(email);
-        validatePhone(dto.getPhone());
+        String phone = dto.getPhone();
+        validatePhone(phone);
         validatePassword(password);
         validateDateOfBirth(dto.getDateOfBirth());
         validateGender(dto.getGender());
+
         if (userRepository.findAllByEmail(email).size() > 0) {
             throw new BadRequestException("An user with this e-mail " +
                     "has already been registered.");
         }
-        if (userRepository.findAllByPhone(dto.getPhone()).size() > 0) {
+        if (userRepository.findAllByPhone(phone).size() > 0) {
             throw new BadRequestException("An user with this phone number " +
                     "has already been registered.");
         }
+
         User user = modelMapper.map(dto, User.class);
-        firstName = firstName.toLowerCase();
-        lastName = lastName.toLowerCase();
-        user.setFirstName(firstName.substring(0, 1).toUpperCase() + firstName.substring(1));
-        user.setLastName(lastName.substring(0, 1).toUpperCase() + lastName.substring(1));
         user.setPassword(bCryptPasswordEncoder.encode(password));
         user.setVerified(false);
         user.setCreatedAt(LocalDateTime.now());
+        // TODO setDefaultProfilePic
         userRepository.save(user);
-        // TODO send verification email !!!
+        sendConfirmationEmail(email, user.getId());
         return modelMapper.map(user, WithoutPassDTO.class);
+    }
+
+    public void verifyEmail(String token) {
+        int uid = TokenCoder.decode(token);
+        if (uid == 0) {
+            throw new NotFoundException("URL is wrong. Token not correct.");
+        }
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("URL is wrong. Token not correct."));
+        if (user.isVerified()) {
+            throw new BadRequestException("User is already verified.");
+        }
     }
 
     ProfileDTO login(LoginDTO dto) {
         String email = dto.getEmail();
-        String password = dto.getPassword();
+        String password = dto.getPassword(); //TODO ? should I trim it?
         List<User> users = userRepository.findAllByEmail(email);
         if (users.size() > 1) {
             throw new UnauthorizedException("Problem in the DB - " +
                     "more than one user with the same email."); // This should never happen.
         }
-        else if (users.size() == 1) {
-            User user = users.get(0);
-            if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-                return modelMapper.map(user, ProfileDTO.class);
+        if (users.size() == 0) {
+            throw new UnauthorizedException("Invalid email or password.");
+        }
+        User user = users.get(0);
+        if (!bCryptPasswordEncoder.matches(password, user.getPassword())) {
+            throw new UnauthorizedException("Invalid email or password.");
+        }
+        return modelMapper.map(user, ProfileDTO.class);
+    }
+
+    public ProfileDTO getById(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("There is no such user."));
+        if (!user.isVerified()) {
+            throw new BadRequestException("The user is not verified.");
+        }
+        return modelMapper.map(user, ProfileDTO.class);
+    }
+
+    public List<ProfileDTO> getAllByName(String name) {
+        name = name.trim();
+        if (!name.contains(" ")) {
+            List<ProfileDTO> userProfiles =
+                    userRepository.findAllByFirstNameOrLastName(name).stream()
+                    .map(user -> modelMapper.map(user, ProfileDTO.class))
+                    .collect(Collectors.toList());
+            if (userProfiles.size() == 0) {
+                throw new NotFoundException("No such users.");
             }
-            else {
-                throw new UnauthorizedException("Invalid email or password.");
-            }
+            return userProfiles;
         }
         else {
-            throw new UnauthorizedException("Invalid email or password.");
+            String[] names = name.split(" ");
+            if (names.length > 2) {
+                throw new BadRequestException("Too many spaces in the text.");
+            }
+            List<User> users = userRepository.findAllByFirstName(names[0]).stream()
+                    .filter(user -> user.getLastName().equals(names[1]))
+                    .collect(Collectors.toList());
+            users.addAll(
+                    userRepository.findAllByLastName(names[1]).stream()
+                            .filter(user -> user.getLastName().equals(names[0]))
+                            .collect(Collectors.toList())
+            );
+            List<ProfileDTO> userProfiles = users.stream()
+                    .map(user -> modelMapper.map(user, ProfileDTO.class))
+                    .collect(Collectors.toList());
+            if (userProfiles.size() == 0) {
+                throw new NotFoundException("No such users.");
+            }
+            return userProfiles;
         }
     }
 
-    // registration validations
+    public void editUserInfo(EditUserInfoDTO dto, int uid) {
+        String firstName = dto.getFirstName();
+        String lastName = dto.getLastName();
+        LocalDate dateOfBirth = dto.getDateOfBirth();
+        char gender = dto.getGender();
+        validateName(firstName);
+        validateName(lastName);
+        validateDateOfBirth(dateOfBirth);
+        validateGender(gender);
+
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("User not found."));
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setDateOfBirth(dateOfBirth);
+        user.setGender(gender);
+        userRepository.save(user);
+    }
+
+    public void editUserPass(EditUserPassDTO dto, int uid) {
+        String newPassword = dto.getNewPassword();
+        if (!newPassword.equals(dto.getConfirmPassword())) {
+            throw new BadRequestException("Passwords mismatch.");
+        }
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("User not found."));
+        if (!bCryptPasswordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Invalid password.");
+        }
+        user.setPassword(newPassword);
+        userRepository.save(user);
+    }
+
+    public String editUserPhoto(int uid, MultipartFile image) {
+        //TODO
+        return null;
+    }
+
+    public void deleteById(int uid) {
+        userRepository.deleteById(uid);
+    }
+
+    private void sendConfirmationEmail(String email, int uid) {
+        String token = TokenCoder.encode(uid);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("dan.angelov93@gmail.com"); //noreply@traveller-online.bg
+        message.setTo(email);
+        message.setSubject("Your Traveller-Online Account - Verify Your Email Address");
+        message.setText("Please, follow the link bellow in order to verify your email address:\n" +
+                "http://traveller-online.bg/app/verify-email?token=" + token);
+        //http://traveller-online.bg/app/verify-email/...
+        emailSender.send(message);
+    }
+
+    // user's info and password validations
 
     private void validateName(String name) {
         if (name.isBlank() || name.length() > 100) {
@@ -132,6 +244,14 @@ public class UserService extends MasterService {
         if (gender != 'm' && gender != 'f' && gender != 'o') {
             throw new BadRequestException("The gender is not valid.");
         }
+    }
+
+    // Cron Job
+
+    @Scheduled(cron = "0 0 0 1/11/21 * ?")
+    public void deleteUsersNotVerified() {
+        List<User> usersNotVerified = userRepository.findAllByIsVerified(false);
+        userRepository.deleteAllInBatch(usersNotVerified);
     }
 
 }

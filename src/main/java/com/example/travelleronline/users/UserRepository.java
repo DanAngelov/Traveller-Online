@@ -9,6 +9,15 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     List<User> findAllByEmail (String email);
-    List<User> findAllByPhone (String email);
+
+    List<User> findAllByPhone (String phone);
+
+    List<User> findAllByFirstNameOrLastName(String name);
+
+    List<User> findAllByFirstName(String name);
+
+    List<User> findAllByLastName(String name);
+
+    List<User> findAllByIsVerified (boolean isVerified);
 
 }
