@@ -1,5 +1,7 @@
 package com.example.travelleronline.users;
 
+import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.posts.Post;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -13,7 +15,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int userId;
     @Column
     private String firstName;
     @Column
@@ -45,5 +47,11 @@ public class User {
 
     @ManyToMany(mappedBy = "subscribers")
     List<User> subscriptions;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> comments;
 
 }

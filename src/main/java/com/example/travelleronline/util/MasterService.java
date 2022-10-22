@@ -2,6 +2,7 @@ package com.example.travelleronline.util;
 
 import com.example.travelleronline.categories.CategoryRepository;
 import com.example.travelleronline.comments.CommentRepository;
+import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.PostRepository;
 import com.example.travelleronline.users.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -21,5 +22,7 @@ public abstract class MasterService {
     protected PostRepository postRepository;
     @Autowired
     protected UserRepository userRepository;
+    @Autowired
+    protected PostImageRepository postImageRepository;
 
 }

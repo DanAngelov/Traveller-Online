@@ -6,14 +6,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PostDTONoOwner {
+public class PostWithoutOwnerDTO {
 
-    private int id;
+    private int postId;
     private String title;
     private LocalDateTime dateOfUpload;
     private String clipUri;
     private String description;
-    private Category categoryId;
+    private Category category;
     private double locationLatitude;
     private double locationLongitude;
 

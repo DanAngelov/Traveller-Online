@@ -1,10 +1,9 @@
 package com.example.travelleronline.categories;
 
+import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.util.MasterService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,11 +40,11 @@ public class CategoryService extends MasterService {
     public void deleteCategoryById(int id) {
         categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
         categoryRepository.deleteById(id);
-    }
+    }//TODO not working
 
     public void deleteAllCategories() {
         categoryRepository.deleteAll();
-    }
+    }//TODO not working
 
     private void validateCategoryName(String category){
         if(category == null || category.equals("null")) {
@@ -60,10 +59,6 @@ public class CategoryService extends MasterService {
                 throw new BadRequestException("Category name already exists.");
             }
         }
-    }
-
-    public List<Category> categories () {
-        return categoryRepository.findAll();
     }
 
 }
