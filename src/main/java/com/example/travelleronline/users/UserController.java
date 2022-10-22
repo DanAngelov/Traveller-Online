@@ -1,6 +1,7 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -22,8 +23,6 @@ public class UserController extends MasterController {
     @Autowired
     private UserService userService;
 
-    //TODO ? endpoints for admins - deleteAllUsers, getAllUsers
-
     // Front-end(originally): Avoid spaces at the beginning and at the end.
     // Front-end(afterwards): A verification email has been sent to: ...
     // ...You have ten days to verify your email.
@@ -33,77 +32,94 @@ public class UserController extends MasterController {
         return userService.register(dto);
     }
 
-    @PutMapping(value = "/app/verify-email", params = {"token"})
-    public void verifyEmail(@RequestParam String token) {
+    @PutMapping(value = "/app/verify-email/{token}")
+    public void verifyEmail(@PathVariable String token) {
         userService.verifyEmail(token);
     }
 
     @PostMapping("/app/login")
-    public ProfileDTO login(@RequestBody LoginDTO dto, HttpServletRequest req) {
+    public ProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
         HttpSession session = req.getSession();;
         if (session.getAttribute(LOGGED) != null && (boolean) session.getAttribute(LOGGED)) {
             session.invalidate();
             throw new BadRequestException("The user was already logged in. Session terminated.");
         }
-        ProfileDTO result = userService.login(dto);
+        ProfileDTO result = userService.logIn(dto);
         logUser(req, result.getId());
         return result;
     }
 
-    @PostMapping("/users/logout")
-    public void logout(HttpSession session) {
-        if (session.getAttribute(LOGGED) == null || !(boolean) session.getAttribute(LOGGED)) {
-            throw new BadRequestException("The user is already logged out.");
-        } // TODO ? Is this needed?
+    @PutMapping("/app/logout")
+    public void logOut(HttpSession session) {
         session.invalidate();
     }
 
-    @GetMapping("/users/{uid}")
-    public ProfileDTO getById(@PathVariable int uid) {
-        return userService.getById(uid);
-    }
+//    @GetMapping("/users/news-feed")
+//    public List<PostDTO> showNewsFeed(HttpServletRequest req) {   //TODO ??? postDTO
+//
+//    }
 
-    @GetMapping(value = "/users/search-by-name", params = {"name"})
+    @GetMapping(value = "/users/search", params = {"name"})
     public List<ProfileDTO> getAllByName(@RequestParam String name) {
         return userService.getAllByName(name);
     }
 
+    @GetMapping("/users/{uid}")
+    public ProfileDTO getById(@PathVariable int uid) { //TODO in profileDTO number of subscribers
+        return userService.getById(uid);
+    }
+
+    // unsubscribes after following visit
+    @PutMapping("/users/{uid}/subscribe")
+    public int subscribe(@PathVariable int uid, HttpServletRequest req) {
+        validateLoggedIn(req);
+        HttpSession session = req.getSession();
+        if (session.getAttribute(USER_ID) == null) {
+            throw new BadRequestException("Subscriber's id is not in session.");
+        }
+        int sid = (int) session.getAttribute(USER_ID); // subscriber's id
+        return userService.subscribe(sid, uid);
+    }
+
+//    @GetMapping("/users/show-subscribers")
+//    public List<ProfileDTO> showSubscribers(HttpServletRequest req) {
+//        //TODO ? need?
+//    }
+
+    @GetMapping("/users/show-subscriptions")
+//    public List<ProfileDTO> showSubscriptions(HttpServletRequest req) {
+//        //TODO
+//    }
+
+
     @PutMapping("/users/{uid}/edit-info")
     public void editUserInfo(@RequestBody EditUserInfoDTO dto, @PathVariable int uid,
                              HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
+        validateLoggedIn(req);
+        validateUser(req.getSession(), uid);
         userService.editUserInfo(dto, uid);
     }
 
     @PutMapping("/users/{uid}/edit-password")
     public void editUserPass(@RequestBody EditUserPassDTO dto, @PathVariable int uid,
                              HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
+        validateLoggedIn(req);
+        validateUser(req.getSession(), uid);
         userService.editUserPass(dto, uid);
     }
 
     @PutMapping("/users/{uid}/edit-user-photo") // using form-data
-    public String editUserPhoto(@RequestParam(value = "image") MultipartFile image,
+    public String editUserPhoto(@RequestParam(value = "file") MultipartFile image,
                               @PathVariable int uid, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
+        validateLoggedIn(req);
+        validateUser(req.getSession(), uid);
         return userService.editUserPhoto(uid, image);
-
     }
 
     @DeleteMapping("/users/{uid}")
     public void deleteById(@PathVariable int uid, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
+        validateLoggedIn(req);
+        validateUser(req.getSession(), uid);
         userService.deleteById(uid);
     }
 
@@ -115,7 +131,9 @@ public class UserController extends MasterController {
         session.setAttribute(REMOTE_ADDRESS, ip);
     }
 
-    private void validateLoggedIn(HttpSession session, String ip) {
+    public void validateLoggedIn(HttpServletRequest req) {
+        HttpSession session = req.getSession();
+        String ip = req.getRemoteAddr();
         if (session.getAttribute(LOGGED) == null ||
                 !(boolean) session.getAttribute(LOGGED) ||
                 session.getAttribute(REMOTE_ADDRESS) == null ||
@@ -124,8 +142,9 @@ public class UserController extends MasterController {
         }
     }
 
-    private void validateIsSameUser(HttpSession session, int uid) {
+    public void validateUser(HttpSession session, int uid) {
         if (uid != (int) session.getAttribute(USER_ID)) {
+            session.invalidate();
             throw new UnauthorizedException("You are not the same user.");
         }
     }

@@ -29,7 +29,7 @@ public class UserService extends MasterService {
     private JavaMailSender emailSender;
 
 
-    public WithoutPassDTO register(RegisterDTO dto) {
+    protected WithoutPassDTO register(RegisterDTO dto) {
         String password = dto.getPassword();
         if (!password.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
@@ -38,7 +38,7 @@ public class UserService extends MasterService {
 
         validateName(dto.getFirstName());
         validateName(dto.getLastName());
-        String email = dto.getEmail();
+        String email = dto.getEmail().trim();
         validateEmail(email);
         String phone = dto.getPhone();
         validatePhone(phone);
@@ -61,25 +61,27 @@ public class UserService extends MasterService {
         user.setCreatedAt(LocalDateTime.now());
         // TODO setDefaultProfilePic
         userRepository.save(user);
-        sendConfirmationEmail(email, user.getId());
+        sendVerificationEmail(email, user.getId());
         return modelMapper.map(user, WithoutPassDTO.class);
     }
 
-    public void verifyEmail(String token) {
+    protected void verifyEmail(String token) {
         int uid = TokenCoder.decode(token);
         if (uid == 0) {
-            throw new NotFoundException("URL is wrong. Token not correct.");
+            throw new BadRequestException("URL is wrong. Token not correct.");
         }
         User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("URL is wrong. Token not correct."));
+                .orElseThrow(() -> new NotFoundException("User not found.."));
         if (user.isVerified()) {
             throw new BadRequestException("User is already verified.");
         }
+        user.setVerified(true);
+        userRepository.save(user);
     }
 
-    ProfileDTO login(LoginDTO dto) {
-        String email = dto.getEmail();
-        String password = dto.getPassword(); //TODO ? should I trim it?
+    ProfileDTO logIn(LoginDTO dto) {
+        String email = dto.getEmail().trim();
+        String password = dto.getPassword().trim();
         List<User> users = userRepository.findAllByEmail(email);
         if (users.size() > 1) {
             throw new UnauthorizedException("Problem in the DB - " +
@@ -92,41 +94,38 @@ public class UserService extends MasterService {
         if (!bCryptPasswordEncoder.matches(password, user.getPassword())) {
             throw new UnauthorizedException("Invalid email or password.");
         }
-        return modelMapper.map(user, ProfileDTO.class);
-    }
-
-    public ProfileDTO getById(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("There is no such user."));
         if (!user.isVerified()) {
-            throw new BadRequestException("The user is not verified.");
+            throw new UnauthorizedException("You have to verify your email first.");
         }
         return modelMapper.map(user, ProfileDTO.class);
     }
 
-    public List<ProfileDTO> getAllByName(String name) {
-        name = name.trim();
-        if (!name.contains(" ")) {
+    protected List<ProfileDTO> getAllByName(String name) {
+        name = name.toLowerCase().trim();
+        if (!name.contains("_")) {
             List<ProfileDTO> userProfiles =
-                    userRepository.findAllByFirstNameOrLastName(name).stream()
-                    .map(user -> modelMapper.map(user, ProfileDTO.class))
-                    .collect(Collectors.toList());
+                    userRepository.findAllByFirstNameOrLastName(name, name).stream()
+                            .filter(user -> user.isVerified())
+                            .map(user -> modelMapper.map(user, ProfileDTO.class))
+                            .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
             }
             return userProfiles;
         }
         else {
-            String[] names = name.split(" ");
+            String[] names = name.split("_");
             if (names.length > 2) {
                 throw new BadRequestException("Too many spaces in the text.");
             }
             List<User> users = userRepository.findAllByFirstName(names[0]).stream()
-                    .filter(user -> user.getLastName().equals(names[1]))
+                    .filter(user -> user.isVerified())
+                    .filter(user -> user.getLastName().equalsIgnoreCase(names[1]))
                     .collect(Collectors.toList());
             users.addAll(
                     userRepository.findAllByLastName(names[1]).stream()
-                            .filter(user -> user.getLastName().equals(names[0]))
+                            .filter(user -> user.isVerified())
+                            .filter(user -> user.getLastName().equalsIgnoreCase(names[0]))
                             .collect(Collectors.toList())
             );
             List<ProfileDTO> userProfiles = users.stream()
@@ -139,7 +138,32 @@ public class UserService extends MasterService {
         }
     }
 
-    public void editUserInfo(EditUserInfoDTO dto, int uid) {
+    protected ProfileDTO getById(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("There is no such user."));
+        if (!user.isVerified()) {
+            throw new BadRequestException("The user is not verified.");
+        }
+        return modelMapper.map(user, ProfileDTO.class);
+    }
+
+    protected int subscribe(int sid, int uid) {
+        User subscriber = userRepository.findById(sid)
+                .orElseThrow(() -> new NotFoundException("You don't exist in the DB."));
+                                                        // This should not happen.
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("Not such user to subscribe to."));
+        if(user.getSubscribers().contains(subscriber)) {
+            user.getSubscribers().remove(subscriber);
+        }
+        else {
+            user.getSubscribers().add(subscriber);
+        }
+        userRepository.save(user);
+        return user.getSubscribers().size();
+    }
+
+    protected void editUserInfo(EditUserInfoDTO dto, int uid) {
         String firstName = dto.getFirstName();
         String lastName = dto.getLastName();
         LocalDate dateOfBirth = dto.getDateOfBirth();
@@ -158,7 +182,7 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
-    public void editUserPass(EditUserPassDTO dto, int uid) {
+    protected void editUserPass(EditUserPassDTO dto, int uid) {
         String newPassword = dto.getNewPassword();
         if (!newPassword.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
@@ -172,23 +196,23 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
-    public String editUserPhoto(int uid, MultipartFile image) {
+    protected String editUserPhoto(int uid, MultipartFile image) {
         //TODO
         return null;
     }
 
-    public void deleteById(int uid) {
+    protected void deleteById(int uid) {
         userRepository.deleteById(uid);
     }
 
-    private void sendConfirmationEmail(String email, int uid) {
+    private void sendVerificationEmail(String email, int uid) {
         String token = TokenCoder.encode(uid);
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("dan.angelov93@gmail.com"); //noreply@traveller-online.bg
+        message.setFrom("noreply@traveller-online.bg");
         message.setTo(email);
         message.setSubject("Your Traveller-Online Account - Verify Your Email Address");
         message.setText("Please, follow the link bellow in order to verify your email address:\n" +
-                "http://traveller-online.bg/app/verify-email?token=" + token);
+                "http://localhost:7000/app/verify-email/" + token);
         //http://traveller-online.bg/app/verify-email/...
         emailSender.send(message);
     }
@@ -202,8 +226,7 @@ public class UserService extends MasterService {
     }
 
     private void validateEmail(String email) {
-        if (!email.matches("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\\\\\\\.[A-Za-z0-9_-]+)*@" +
-                "[^-][A-Za-z0-9-]+\" +\n\"(\\\\\\\\.[A-Za-z0-9-]+)*(\\\\\\\\.[A-Za-z]{2,100})$")) {
+        if (!email.matches("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")) {
             throw new BadRequestException("Invalid email.");
         }
     }
@@ -248,9 +271,12 @@ public class UserService extends MasterService {
 
     // Cron Job
 
-    @Scheduled(cron = "0 0 0 1/11/21 * ?")
+    @Scheduled(fixedRate = 10*24*60*60*1000) // for every 10 days
     public void deleteUsersNotVerified() {
-        List<User> usersNotVerified = userRepository.findAllByIsVerified(false);
+        List<User> usersNotVerified = userRepository.findAllByIsVerified(false).stream()
+            .filter(user ->
+                Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now()).getDays() >= 10)
+            .collect(Collectors.toList());
         userRepository.deleteAllInBatch(usersNotVerified);
     }
 

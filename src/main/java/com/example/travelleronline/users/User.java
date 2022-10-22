@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "users")
 @Data
@@ -33,5 +34,16 @@ public class User {
     private LocalDateTime createdAt;
     @Column
     private boolean isVerified;
+
+    @ManyToMany
+    @JoinTable(
+        name = "subscribers",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "sub_id")
+    )
+    List<User> subscribers;
+
+    @ManyToMany(mappedBy = "subscribers")
+    List<User> subscriptions;
 
 }

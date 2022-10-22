@@ -52,24 +52,25 @@ public abstract class TokenCoder {
 
     // returns 0 when token is wrong
     public static int decode(String token) {
-        if (!token.toLowerCase().matches("[a-z]")) {
+        String string = token.toLowerCase();
+        if (!string.matches("[a-z]+")) {
             return 0;
         }
-        int length = token.length();
+        int length = string.length();
         int firstSpecPosition = FIRST_SPECIAL_POSITION_AT_BEGINNING;
         int secondSpecPosition = SECOND_SPECIAL_POSITION_AT_BEGINNING;
         int thirdSpecPosition = length - ENDING_LENGTH + FIRST_SPECIAL_POSITION_AT_ENDING;
         int forthSpecPosition = length - ENDING_LENGTH + SECOND_SPECIAL_POSITION_AT_ENDING;
-        if (token.charAt(firstSpecPosition) != (char) FIRST_SPECIAL_LETTER ||
-                token.charAt(secondSpecPosition) != (char) SECOND_SPECIAL_LETTER ||
-                token.charAt(thirdSpecPosition) != (char) FIRST_SPECIAL_LETTER ||
-                token.charAt(forthSpecPosition) != (char) SECOND_SPECIAL_LETTER) {
+        if (string.charAt(firstSpecPosition) != (char) FIRST_SPECIAL_LETTER ||
+                string.charAt(secondSpecPosition) != (char) SECOND_SPECIAL_LETTER ||
+                string.charAt(thirdSpecPosition) != (char) FIRST_SPECIAL_LETTER ||
+                string.charAt(forthSpecPosition) != (char) SECOND_SPECIAL_LETTER) {
             return 0;
         }
 
         int uidBeginIndex = BEGINNING_LENGTH;
         int uidEndIndex = length - ENDING_LENGTH;
-        return getDecodedString(token.substring(uidBeginIndex, uidEndIndex));
+        return getDecodedString(string.substring(uidBeginIndex, uidEndIndex));
     }
 
     private static char getRandomLetter() {
@@ -89,7 +90,8 @@ public abstract class TokenCoder {
     private static String getEncodedInt(int integer) {
         StringBuilder original = new StringBuilder(Integer.toString(integer));
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < original.length(); i++) {
+        int length = original.length();
+        for (int i = 0; i < length; i++) {
             char newFirstLetter = (char)
                     (Integer.parseInt(original.substring(0,1)) + INT_TO_CHAR_START);
             result.append(randomlyCapitalize(newFirstLetter));
@@ -102,14 +104,16 @@ public abstract class TokenCoder {
         StringBuilder original = new StringBuilder(string.toLowerCase());
         int result = 0;
         int digitWeight = 1;
-        for (int i = 0; i < original.length(); i++) {
+        int length = original.length();
+        for (int i = 0; i < length; i++) {
             int lastLetterValue = original.charAt(original.length() - 1);
             int digit = lastLetterValue - INT_TO_CHAR_START;
             if (digit < 0 || digit > 9) {
                 return 0;
             }
-            result = digit * digitWeight;
+            result += digit * digitWeight;
             digitWeight *= 10;
+            original.delete(original.length()-1,original.length());
         }
         return result;
     }
