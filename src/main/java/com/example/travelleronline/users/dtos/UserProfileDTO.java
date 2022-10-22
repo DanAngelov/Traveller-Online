@@ -5,12 +5,14 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class EditUserInfoDTO {
+public class UserProfileDTO {
 
+    private int userId;
     private String firstName;
     private String lastName;
-    private String phone;
     private LocalDate dateOfBirth;
     private char gender;
+    private String userPhotoUri;
+    private int subscriptions;
 
 }

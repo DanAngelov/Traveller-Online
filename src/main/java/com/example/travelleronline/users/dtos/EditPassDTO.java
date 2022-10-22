@@ -3,7 +3,7 @@ package com.example.travelleronline.users.dtos;
 import lombok.Data;
 
 @Data
-public class EditUserPassDTO {
+public class EditPassDTO {
 
     private String oldPassword;
     private String newPassword;

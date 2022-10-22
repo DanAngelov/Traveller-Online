@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 @RestController
 public abstract class MasterController {
 
+    public static final String LOGGED = "logged";
+    public static final String USER_ID = "user_id";
+    public static final String REMOTE_ADDRESS = "remote_address";
+
     @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     private ErrorDto handleBadRequest(BadRequestException e){

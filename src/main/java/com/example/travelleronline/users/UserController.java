@@ -1,7 +1,7 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.dtos.PostDTO;
+import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -17,9 +17,6 @@ import java.util.List;
 @RestController
 public class UserController extends MasterController {
 
-    public static final String LOGGED = "logged";
-    public static final String USER_ID = "user_id";
-    public static final String REMOTE_ADDRESS = "remote_address";
     @Autowired
     private UserService userService;
 
@@ -28,7 +25,7 @@ public class UserController extends MasterController {
     // ...You have ten days to verify your email.
     @PostMapping("/app/registration")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public WithoutPassDTO register(@RequestBody RegisterDTO dto) {
+    public UserWithoutPassDTO register(@RequestBody RegisterDTO dto) {
         return userService.register(dto);
     }
 
@@ -38,14 +35,14 @@ public class UserController extends MasterController {
     }
 
     @PostMapping("/app/login")
-    public ProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
+    public UserProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
         HttpSession session = req.getSession();;
         if (session.getAttribute(LOGGED) != null && (boolean) session.getAttribute(LOGGED)) {
             session.invalidate();
             throw new BadRequestException("The user was already logged in. Session terminated.");
         }
-        ProfileDTO result = userService.logIn(dto);
-        logUser(req, result.getId());
+        UserProfileDTO result = userService.logIn(dto);
+        logUser(req, result.getUserId());
         return result;
     }
 
@@ -54,73 +51,68 @@ public class UserController extends MasterController {
         session.invalidate();
     }
 
-//    @GetMapping("/users/news-feed")
-//    public List<PostDTO> showNewsFeed(HttpServletRequest req) {   //TODO ??? postDTO
-//
-//    }
+    @GetMapping("/users/{uid}")
+    public UserProfileDTO getById(@PathVariable int uid) {
+        return userService.getById(uid);
+    }
 
     @GetMapping(value = "/users/search", params = {"name"})
-    public List<ProfileDTO> getAllByName(@RequestParam String name) {
+    public List<UserProfileDTO> getAllByName(@RequestParam String name) {
         return userService.getAllByName(name);
     }
 
-    @GetMapping("/users/{uid}")
-    public ProfileDTO getById(@PathVariable int uid) { //TODO in profileDTO number of subscribers
-        return userService.getById(uid);
+    // News Feed
+    @GetMapping("/news-feed")
+    public List<PostWithoutOwnerDTO> showNewsFeed(HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showNewsFeed(getUserId(req));
+    }
+
+    // Profile Page
+    @GetMapping("/users/{uid}/posts")
+    public List<PostWithoutOwnerDTO> showPostsOfUser(@PathVariable int uid,
+                                                     HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showPostsOfUser(uid);
     }
 
     // unsubscribes after following visit
     @PutMapping("/users/{uid}/subscribe")
     public int subscribe(@PathVariable int uid, HttpServletRequest req) {
         validateLoggedIn(req);
-        HttpSession session = req.getSession();
-        if (session.getAttribute(USER_ID) == null) {
-            throw new BadRequestException("Subscriber's id is not in session.");
-        }
-        int sid = (int) session.getAttribute(USER_ID); // subscriber's id
+        int sid = getUserId(req); // subscriber's id
         return userService.subscribe(sid, uid);
     }
 
-//    @GetMapping("/users/show-subscribers")
-//    public List<ProfileDTO> showSubscribers(HttpServletRequest req) {
-//        //TODO ? need?
-//    }
-
-    @GetMapping("/users/show-subscriptions")
-//    public List<ProfileDTO> showSubscriptions(HttpServletRequest req) {
-//        //TODO
-//    }
-
-
-    @PutMapping("/users/{uid}/edit-info")
-    public void editUserInfo(@RequestBody EditUserInfoDTO dto, @PathVariable int uid,
-                             HttpServletRequest req) {
+    @GetMapping("/users/my-subscribers")
+    public List<UserProfileDTO> showSubscribers(HttpServletRequest req) {
         validateLoggedIn(req);
-        validateUser(req.getSession(), uid);
-        userService.editUserInfo(dto, uid);
+        return userService.showSubscribers(getUserId(req));
     }
 
-    @PutMapping("/users/{uid}/edit-password")
-    public void editUserPass(@RequestBody EditUserPassDTO dto, @PathVariable int uid,
-                             HttpServletRequest req) {
+    @GetMapping("/users/my-subscriptions")
+    public List<UserProfileDTO> showSubscriptions(HttpServletRequest req) {
         validateLoggedIn(req);
-        validateUser(req.getSession(), uid);
-        userService.editUserPass(dto, uid);
+        return userService.showSubscriptions(getUserId(req));
     }
 
-    @PutMapping("/users/{uid}/edit-user-photo") // using form-data
-    public String editUserPhoto(@RequestParam(value = "file") MultipartFile image,
-                              @PathVariable int uid, HttpServletRequest req) {
+
+    @PutMapping("/users/edit-info")
+    public void editUserInfo(@RequestBody EditInfoDTO dto, HttpServletRequest req) {
         validateLoggedIn(req);
-        validateUser(req.getSession(), uid);
-        return userService.editUserPhoto(uid, image);
+        userService.editUserInfo(dto, getUserId(req));
     }
 
-    @DeleteMapping("/users/{uid}")
-    public void deleteById(@PathVariable int uid, HttpServletRequest req) {
+    @PutMapping("/users/edit-password")
+    public void editUserPass(@RequestBody EditPassDTO dto, HttpServletRequest req) {
         validateLoggedIn(req);
-        validateUser(req.getSession(), uid);
-        userService.deleteById(uid);
+        userService.editUserPass(dto, getUserId(req));
+    }
+
+    @DeleteMapping("/users/delete-user")
+    public void deleteById(HttpServletRequest req) {
+        validateLoggedIn(req);
+        userService.deleteById(getUserId(req));
     }
 
     private void logUser(HttpServletRequest req, int uid) {
@@ -142,11 +134,11 @@ public class UserController extends MasterController {
         }
     }
 
-    public void validateUser(HttpSession session, int uid) {
-        if (uid != (int) session.getAttribute(USER_ID)) {
-            session.invalidate();
-            throw new UnauthorizedException("You are not the same user.");
+    public int getUserId(HttpServletRequest req) {
+        if (req.getSession().getAttribute(USER_ID) == null) {
+            return 0;
         }
+        return (int) req.getSession().getAttribute(USER_ID);
     }
 
 }

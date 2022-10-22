@@ -3,6 +3,7 @@ package com.example.travelleronline.users;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
@@ -12,7 +13,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +29,7 @@ public class UserService extends MasterService {
     private JavaMailSender emailSender;
 
 
-    protected WithoutPassDTO register(RegisterDTO dto) {
+    UserWithoutPassDTO register(RegisterDTO dto) {
         String password = dto.getPassword();
         if (!password.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
@@ -61,11 +61,11 @@ public class UserService extends MasterService {
         user.setCreatedAt(LocalDateTime.now());
         // TODO setDefaultProfilePic
         userRepository.save(user);
-        sendVerificationEmail(email, user.getId());
-        return modelMapper.map(user, WithoutPassDTO.class);
+        sendVerificationEmail(email, user.getUserId());
+        return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 
-    protected void verifyEmail(String token) {
+    void verifyEmail(String token) {
         int uid = TokenCoder.decode(token);
         if (uid == 0) {
             throw new BadRequestException("URL is wrong. Token not correct.");
@@ -79,7 +79,7 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
-    ProfileDTO logIn(LoginDTO dto) {
+    UserProfileDTO logIn(LoginDTO dto) {
         String email = dto.getEmail().trim();
         String password = dto.getPassword().trim();
         List<User> users = userRepository.findAllByEmail(email);
@@ -97,16 +97,25 @@ public class UserService extends MasterService {
         if (!user.isVerified()) {
             throw new UnauthorizedException("You have to verify your email first.");
         }
-        return modelMapper.map(user, ProfileDTO.class);
+        return modelMapper.map(user, UserProfileDTO.class);
     }
 
-    protected List<ProfileDTO> getAllByName(String name) {
+    UserProfileDTO getById(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("There is no such user."));
+        if (!user.isVerified()) {
+            throw new BadRequestException("The user is not verified.");
+        }
+        return modelMapper.map(user, UserProfileDTO.class);
+    }
+
+    List<UserProfileDTO> getAllByName(String name) {
         name = name.toLowerCase().trim();
         if (!name.contains("_")) {
-            List<ProfileDTO> userProfiles =
+            List<UserProfileDTO> userProfiles =
                     userRepository.findAllByFirstNameOrLastName(name, name).stream()
                             .filter(user -> user.isVerified())
-                            .map(user -> modelMapper.map(user, ProfileDTO.class))
+                            .map(user -> modelMapper.map(user, UserProfileDTO.class))
                             .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
@@ -128,8 +137,8 @@ public class UserService extends MasterService {
                             .filter(user -> user.getLastName().equalsIgnoreCase(names[0]))
                             .collect(Collectors.toList())
             );
-            List<ProfileDTO> userProfiles = users.stream()
-                    .map(user -> modelMapper.map(user, ProfileDTO.class))
+            List<UserProfileDTO> userProfiles = users.stream()
+                    .map(user -> modelMapper.map(user, UserProfileDTO.class))
                     .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
@@ -138,16 +147,17 @@ public class UserService extends MasterService {
         }
     }
 
-    protected ProfileDTO getById(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("There is no such user."));
-        if (!user.isVerified()) {
-            throw new BadRequestException("The user is not verified.");
-        }
-        return modelMapper.map(user, ProfileDTO.class);
+    List<PostWithoutOwnerDTO> showNewsFeed(int uid) {
+        //TODO
+        return null;
     }
 
-    protected int subscribe(int sid, int uid) {
+    List<PostWithoutOwnerDTO> showPostsOfUser(int uid) {
+        //TODO
+        return null;
+    }
+
+    int subscribe(int sid, int uid) {
         User subscriber = userRepository.findById(sid)
                 .orElseThrow(() -> new NotFoundException("You don't exist in the DB."));
                                                         // This should not happen.
@@ -163,7 +173,23 @@ public class UserService extends MasterService {
         return user.getSubscribers().size();
     }
 
-    protected void editUserInfo(EditUserInfoDTO dto, int uid) {
+    List<UserProfileDTO> showSubscribers(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("User not found."));
+        return user.getSubscribers().stream()
+                .map(u -> modelMapper.map(u, UserProfileDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    List<UserProfileDTO> showSubscriptions(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("User not found."));
+        return user.getSubscriptions().stream()
+                .map(u -> modelMapper.map(u, UserProfileDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    void editUserInfo(EditInfoDTO dto, int uid) {
         String firstName = dto.getFirstName();
         String lastName = dto.getLastName();
         LocalDate dateOfBirth = dto.getDateOfBirth();
@@ -182,7 +208,7 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
-    protected void editUserPass(EditUserPassDTO dto, int uid) {
+    void editUserPass(EditPassDTO dto, int uid) {
         String newPassword = dto.getNewPassword();
         if (!newPassword.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
@@ -196,12 +222,7 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
-    protected String editUserPhoto(int uid, MultipartFile image) {
-        //TODO
-        return null;
-    }
-
-    protected void deleteById(int uid) {
+    void deleteById(int uid) {
         userRepository.deleteById(uid);
     }
 
