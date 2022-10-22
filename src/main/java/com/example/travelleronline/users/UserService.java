@@ -61,7 +61,7 @@ public class UserService extends MasterService {
         user.setCreatedAt(LocalDateTime.now());
         // TODO setDefaultProfilePic
         userRepository.save(user);
-        sendConfirmationEmail(email, user.getId());
+        sendConfirmationEmail(email, user.getUserId());
         return modelMapper.map(user, WithoutPassDTO.class);
     }
 
@@ -108,7 +108,7 @@ public class UserService extends MasterService {
         name = name.trim();
         if (!name.contains(" ")) {
             List<ProfileDTO> userProfiles =
-                    userRepository.findAllByFirstNameOrLastName(name).stream()
+                    userRepository.findAllByFirstNameOrLastName(name, name).stream()
                     .map(user -> modelMapper.map(user, ProfileDTO.class))
                     .collect(Collectors.toList());
             if (userProfiles.size() == 0) {

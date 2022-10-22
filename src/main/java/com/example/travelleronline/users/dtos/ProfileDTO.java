@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Data
 public class ProfileDTO {
 
-    private String userId;
+    private int userId;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;

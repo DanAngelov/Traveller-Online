@@ -46,7 +46,7 @@ public class UserController extends MasterController {
             throw new BadRequestException("The user was already logged in. Session terminated.");
         }
         ProfileDTO result = userService.login(dto);
-        logUser(req, result.getId());
+        logUser(req, result.getUserId());
         return result;
     }
 

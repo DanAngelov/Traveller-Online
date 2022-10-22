@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     List<User> findAllByPhone (String phone);
 
-    List<User> findAllByFirstNameOrLastName(String name);
+    List<User> findAllByFirstNameOrLastName(String name,String name1);
 
     List<User> findAllByFirstName(String name);
 
