@@ -1,13 +1,13 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.posts.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -16,95 +16,102 @@ import java.util.List;
 @RestController
 public class UserController extends MasterController {
 
-    public static final String LOGGED = "logged";
-    public static final String USER_ID = "user_id";
-    public static final String REMOTE_ADDRESS = "remote_address";
     @Autowired
     private UserService userService;
-
-    //TODO ? endpoints for admins - deleteAllUsers, getAllUsers
 
     // Front-end(originally): Avoid spaces at the beginning and at the end.
     // Front-end(afterwards): A verification email has been sent to: ...
     // ...You have ten days to verify your email.
     @PostMapping("/app/registration")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public WithoutPassDTO register(@RequestBody RegisterDTO dto) {
+    public UserWithoutPassDTO register(@RequestBody RegisterDTO dto) {
         return userService.register(dto);
     }
 
-    @PutMapping(value = "/app/verify-email", params = {"token"})
-    public void verifyEmail(@RequestParam String token) {
+    @PutMapping(value = "/app/verify-email/{token}")
+    public void verifyEmail(@PathVariable String token) {
         userService.verifyEmail(token);
     }
 
     @PostMapping("/app/login")
-    public ProfileDTO login(@RequestBody LoginDTO dto, HttpServletRequest req) {
+    public UserProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
         HttpSession session = req.getSession();;
         if (session.getAttribute(LOGGED) != null && (boolean) session.getAttribute(LOGGED)) {
             session.invalidate();
             throw new BadRequestException("The user was already logged in. Session terminated.");
         }
-        ProfileDTO result = userService.login(dto);
+        UserProfileDTO result = userService.logIn(dto);
         logUser(req, result.getUserId());
         return result;
     }
 
-    @PostMapping("/users/logout")
-    public void logout(HttpSession session) {
-        if (session.getAttribute(LOGGED) == null || !(boolean) session.getAttribute(LOGGED)) {
-            throw new BadRequestException("The user is already logged out.");
-        } // TODO ? Is this needed?
+    @PutMapping("/app/logout")
+    public void logOut(HttpSession session) {
         session.invalidate();
     }
 
     @GetMapping("/users/{uid}")
-    public ProfileDTO getById(@PathVariable int uid) {
+    public UserProfileDTO getById(@PathVariable int uid) {
         return userService.getById(uid);
     }
 
-    @GetMapping(value = "/users/search-by-name", params = {"name"})
-    public List<ProfileDTO> getAllByName(@RequestParam String name) {
+    @GetMapping(value = "/users/search", params = {"name"})
+    public List<UserProfileDTO> getAllByName(@RequestParam String name) {
         return userService.getAllByName(name);
     }
 
-    @PutMapping("/users/{uid}/edit-info")
-    public void editUserInfo(@RequestBody EditUserInfoDTO dto, @PathVariable int uid,
-                             HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
-        userService.editUserInfo(dto, uid);
+    // News Feed
+    @GetMapping("/news-feed")
+    public List<PostDTO> showNewsFeed(HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showNewsFeed(getUserId(req));
     }
 
-    @PutMapping("/users/{uid}/edit-password")
-    public void editUserPass(@RequestBody EditUserPassDTO dto, @PathVariable int uid,
-                             HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
-        userService.editUserPass(dto, uid);
+    // Profile Page
+    @GetMapping("/users/{uid}/posts")
+    public List<PostDTO> showPostsOfUser(@PathVariable int uid,
+                                         HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showPostsOfUser(uid);
     }
 
-    @PutMapping("/users/{uid}/edit-user-photo") // using form-data
-    public String editUserPhoto(@RequestParam(value = "image") MultipartFile image,
-                              @PathVariable int uid, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        validateIsSameUser(session, uid);
-        return userService.editUserPhoto(uid, image);
-
+    // unsubscribes after following visit
+    @PutMapping("/users/{uid}/subscribe")
+    public int subscribe(@PathVariable int uid, HttpServletRequest req) {
+        validateLoggedIn(req);
+        int sid = getUserId(req); // subscriber's id
+        return userService.subscribe(sid, uid);
     }
 
-    @DeleteMapping("/users/{uid}")
-    public void deleteById(@PathVariable int uid, HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        validateLoggedIn(session, ip);
-        userService.deleteById(uid);
+    @GetMapping("/users/my-subscribers")
+    public List<UserProfileDTO> showSubscribers(HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showSubscribers(getUserId(req));
+    }
+
+    @GetMapping("/users/my-subscriptions")
+    public List<UserProfileDTO> showSubscriptions(HttpServletRequest req) {
+        validateLoggedIn(req);
+        return userService.showSubscriptions(getUserId(req));
+    }
+
+
+    @PutMapping("/users/edit-info")
+    public void editUserInfo(@RequestBody EditInfoDTO dto, HttpServletRequest req) {
+        validateLoggedIn(req);
+        userService.editUserInfo(dto, getUserId(req));
+    }
+
+    @PutMapping("/users/edit-password")
+    public void editUserPass(@RequestBody EditPassDTO dto, HttpServletRequest req) {
+        validateLoggedIn(req);
+        userService.editUserPass(dto, getUserId(req));
+    }
+
+    @DeleteMapping("/users/delete-user")
+    public void deleteById(HttpServletRequest req) {
+        validateLoggedIn(req);
+        userService.deleteById(getUserId(req));
     }
 
     private void logUser(HttpServletRequest req, int uid) {
@@ -115,7 +122,9 @@ public class UserController extends MasterController {
         session.setAttribute(REMOTE_ADDRESS, ip);
     }
 
-    private void validateLoggedIn(HttpSession session, String ip) {
+    public void validateLoggedIn(HttpServletRequest req) {
+        HttpSession session = req.getSession();
+        String ip = req.getRemoteAddr();
         if (session.getAttribute(LOGGED) == null ||
                 !(boolean) session.getAttribute(LOGGED) ||
                 session.getAttribute(REMOTE_ADDRESS) == null ||
@@ -124,10 +133,11 @@ public class UserController extends MasterController {
         }
     }
 
-    private void validateIsSameUser(HttpSession session, int uid) {
-        if (uid != (int) session.getAttribute(USER_ID)) {
-            throw new UnauthorizedException("You are not the same user.");
+    public int getUserId(HttpServletRequest req) {
+        if (req.getSession().getAttribute(USER_ID) == null) {
+            return 0;
         }
+        return (int) req.getSession().getAttribute(USER_ID);
     }
 
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class ProfileDTO {
+public class UserProfileDTO {
 
     private int userId;
     private String firstName;
@@ -13,5 +13,6 @@ public class ProfileDTO {
     private LocalDate dateOfBirth;
     private char gender;
     private String userPhotoUri;
+    private int subscriptions;
 
 }

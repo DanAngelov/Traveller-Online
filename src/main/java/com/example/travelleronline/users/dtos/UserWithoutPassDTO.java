@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class WithoutPassDTO {
+public class UserWithoutPassDTO {
 
     private int userId;
     private String firstName;

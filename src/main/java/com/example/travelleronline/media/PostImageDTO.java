@@ -4,9 +4,10 @@ package com.example.travelleronline.media;
 import lombok.Data;
 
 @Data
-public class PostImageWithoutPostDTO {
+public class PostImageDTO {
 
     private int imageId;
     private String imageUri;
+    private int postId;
 
 }

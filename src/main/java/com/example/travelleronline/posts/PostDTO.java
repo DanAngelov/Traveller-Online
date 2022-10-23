@@ -1,22 +1,25 @@
-package com.example.travelleronline.posts.dtos;
+package com.example.travelleronline.posts;
 
-import com.example.travelleronline.categories.Category;
-import com.example.travelleronline.users.User;
+import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.media.PostImage;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PostDTO {
 
     private int postId;
-    private User ownerId;
+    private int ownerId;
     private String title;
     private LocalDateTime dateOfUpload;
     private String clipUri;
     private String description;
-    private Category category;
+    private String category;
     private double locationLatitude;
     private double locationLongitude;
+    private List<String> comments;
+    private List<String> postImages;
 
 }
