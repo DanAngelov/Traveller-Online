@@ -40,8 +40,8 @@ public class User {
     @ManyToMany
     @JoinTable(
         name = "subscribers",
-        joinColumns = @JoinColumn(name = "user_id", nullable = false, unique = true),
-        inverseJoinColumns = @JoinColumn(name = "sub_id", nullable = false, unique = true)
+        joinColumns = @JoinColumn(name = "user_id", nullable = false),
+        inverseJoinColumns = @JoinColumn(name = "sub_id", nullable = false)
     )
     List<User> subscribers;
 

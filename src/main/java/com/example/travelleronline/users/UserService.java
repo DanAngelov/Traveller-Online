@@ -3,7 +3,8 @@ package com.example.travelleronline.users;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
+import com.example.travelleronline.posts.Post;
+import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
@@ -17,8 +18,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.YEARS;
 
 @Service
 public class UserService extends MasterService {
@@ -71,7 +75,7 @@ public class UserService extends MasterService {
             throw new BadRequestException("URL is wrong. Token not correct.");
         }
         User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found.."));
+                .orElseThrow(() -> new NotFoundException("User not found."));
         if (user.isVerified()) {
             throw new BadRequestException("User is already verified.");
         }
@@ -101,11 +105,7 @@ public class UserService extends MasterService {
     }
 
     UserProfileDTO getById(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("There is no such user."));
-        if (!user.isVerified()) {
-            throw new BadRequestException("The user is not verified.");
-        }
+        User user = getVerifiedUserById(uid);
         return modelMapper.map(user, UserProfileDTO.class);
     }
 
@@ -114,9 +114,9 @@ public class UserService extends MasterService {
         if (!name.contains("_")) {
             List<UserProfileDTO> userProfiles =
                     userRepository.findAllByFirstNameOrLastName(name, name).stream()
-                            .filter(user -> user.isVerified())
-                            .map(user -> modelMapper.map(user, UserProfileDTO.class))
-                            .collect(Collectors.toList());
+                        .filter(user -> user.isVerified())
+                        .map(user -> modelMapper.map(user, UserProfileDTO.class))
+                        .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
             }
@@ -147,22 +147,46 @@ public class UserService extends MasterService {
         }
     }
 
-    List<PostWithoutOwnerDTO> showNewsFeed(int uid) {
-        //TODO
-        return null;
+    List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
+        List<PostDTO> postsInNewsFeed = new ArrayList<>();
+        List<User> subscriptions = getVerifiedUserById(uid).getSubscriptions();
+        for (User u : subscriptions) {
+            Iterator<Post> it = u.getPosts().listIterator();
+            while (it.hasNext()) {
+                Post post = it.next();
+                long days = getDaysTillNow(post);
+                if (days >= daysMin && days <= daysMax) {
+                        postsInNewsFeed.add(modelMapper.map(post, PostDTO.class));
+                }
+            }
+        }
+        Collections.sort(postsInNewsFeed,
+                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+        return postsInNewsFeed;
     }
 
-    List<PostWithoutOwnerDTO> showPostsOfUser(int uid) {
-        //TODO
-        return null;
+    List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
+        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
+                .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
+                .collect(Collectors.toList());
+        if (orderBy.equals("date")) {
+            Collections.sort(posts,
+                    (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+        }
+        else if (orderBy.equals("likes")) {
+            // TODO !!!
+        }
+        else {
+            throw new BadRequestException("Wrong request parameters.");
+        }
+        return posts.stream()
+                .map(post -> modelMapper.map(post, PostDTO.class))
+                .collect(Collectors.toList());
     }
 
     int subscribe(int sid, int uid) {
-        User subscriber = userRepository.findById(sid)
-                .orElseThrow(() -> new NotFoundException("You don't exist in the DB."));
-                                                        // This should not happen.
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("Not such user to subscribe to."));
+        User subscriber = getVerifiedUserById(sid);
+        User user = getVerifiedUserById(uid);
         if(user.getSubscribers().contains(subscriber)) {
             user.getSubscribers().remove(subscriber);
         }
@@ -174,16 +198,14 @@ public class UserService extends MasterService {
     }
 
     List<UserProfileDTO> showSubscribers(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
+        User user = getVerifiedUserById(uid);
         return user.getSubscribers().stream()
                 .map(u -> modelMapper.map(u, UserProfileDTO.class))
                 .collect(Collectors.toList());
     }
 
     List<UserProfileDTO> showSubscriptions(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
+        User user = getVerifiedUserById(uid);
         return user.getSubscriptions().stream()
                 .map(u -> modelMapper.map(u, UserProfileDTO.class))
                 .collect(Collectors.toList());
@@ -199,8 +221,7 @@ public class UserService extends MasterService {
         validateDateOfBirth(dateOfBirth);
         validateGender(gender);
 
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
+        User user = getVerifiedUserById(uid);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setDateOfBirth(dateOfBirth);
@@ -213,8 +234,7 @@ public class UserService extends MasterService {
         if (!newPassword.equals(dto.getConfirmPassword())) {
             throw new BadRequestException("Passwords mismatch.");
         }
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
+        User user = getVerifiedUserById(uid);
         if (!bCryptPasswordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
             throw new UnauthorizedException("Invalid password.");
         }
@@ -236,6 +256,19 @@ public class UserService extends MasterService {
                 "http://localhost:7000/app/verify-email/" + token);
         //http://traveller-online.bg/app/verify-email/...
         emailSender.send(message);
+    }
+
+    private User getVerifiedUserById(int uid) {
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NotFoundException("User not found."));
+        if (!user.isVerified()) {
+            throw new BadRequestException("The user is not verified.");
+        }
+        return user;
+    }
+
+    private long getDaysTillNow(Post post) {
+        return DAYS.between(post.getDateOfUpload().toLocalDate(), LocalDate.now());
     }
 
     // user's info and password validations
@@ -275,7 +308,7 @@ public class UserService extends MasterService {
         if (dateOfBirth == null) {
             throw new BadRequestException("The date of birth is blank.");
         }
-        int years = Period.between(dateOfBirth, LocalDate.now()).getYears();
+        long years = YEARS.between(dateOfBirth, LocalDate.now());
         if (years < 18) {
             throw new BadRequestException("Too young.");
         }

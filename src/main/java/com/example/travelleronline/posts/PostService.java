@@ -47,7 +47,7 @@ public class PostService extends MasterService {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
         existingPost.setTitle(dto.getTitle());
         existingPost.setDescription(dto.getDescription());
-        existingPost.setCategory(dto.getCategory());
+//        existingPost.setCategory(dto.getCategory()); //TODO bring back
         existingPost.setClipUri(dto.getClipUri());
         existingPost.setLocationLatitude(dto.getLocationLatitude());
         existingPost.setLocationLongitude(dto.getLocationLongitude());
@@ -58,7 +58,7 @@ public class PostService extends MasterService {
     private void validatePost(PostDTO dto) {
         validateTitle(dto.getTitle());
         validateDescription(dto.getDescription());
-        validateCategory(dto.getCategory());
+//        validateCategory(dto.getCategory()); //TODO bring back
         validateLocation(dto.getLocationLatitude(), dto.getLocationLongitude());
     }
 

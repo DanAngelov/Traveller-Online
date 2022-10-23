@@ -37,7 +37,7 @@ public class TravellerOnlineApplication {
         mailSender.setPort(587);
 
         mailSender.setUsername("dan.angelov93@gmail.com");
-        mailSender.setPassword("rorlokcdgptzjztt");
+        mailSender.setPassword("zlxviuhomqzomawf");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

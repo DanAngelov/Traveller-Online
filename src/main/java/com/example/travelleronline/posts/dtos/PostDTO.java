@@ -15,7 +15,7 @@ public class PostDTO {
     private LocalDateTime dateOfUpload;
     private String clipUri;
     private String description;
-    private Category category;
+//    private Category category; TODO bring back
     private double locationLatitude;
     private double locationLongitude;
 

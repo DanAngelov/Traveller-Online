@@ -1,14 +1,13 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
+import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -52,28 +51,34 @@ public class UserController extends MasterController {
     }
 
     @GetMapping("/users/{uid}")
-    public UserProfileDTO getById(@PathVariable int uid) {
+    public UserProfileDTO getById(@PathVariable int uid, HttpServletRequest req) {
+        validateLoggedIn(req);
         return userService.getById(uid);
     }
 
-    @GetMapping(value = "/users/search", params = {"name"})
-    public List<UserProfileDTO> getAllByName(@RequestParam String name) {
+    @GetMapping(value = "/users/search")
+    public List<UserProfileDTO> getAllByName(@RequestParam String name, HttpServletRequest req) {
+        validateLoggedIn(req);
         return userService.getAllByName(name);
     }
 
     // News Feed
-    @GetMapping("/news-feed")
-    public List<PostWithoutOwnerDTO> showNewsFeed(HttpServletRequest req) {
+    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
+    public List<PostDTO> showNewsFeed(HttpServletRequest req, // TODO ??? List<PostDTO>
+                                        @RequestParam("days_min") int daysMin,
+                                      @RequestParam("days_max") int daysMax) {
         validateLoggedIn(req);
-        return userService.showNewsFeed(getUserId(req));
+        return userService.showNewsFeed(getUserId(req), daysMin, daysMax);
     }
 
     // Profile Page
-    @GetMapping("/users/{uid}/posts")
-    public List<PostWithoutOwnerDTO> showPostsOfUser(@PathVariable int uid,
-                                                     HttpServletRequest req) {
+    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
+    public List<PostDTO> showPostsOfUser(HttpServletRequest req, @PathVariable int uid,
+                                         @RequestParam("days_min") int daysMin,
+                                         @RequestParam("days_max") int daysMax,
+                                         @RequestParam("order_by") String orderBy) {
         validateLoggedIn(req);
-        return userService.showPostsOfUser(uid);
+        return userService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
     }
 
     // unsubscribes after following visit
