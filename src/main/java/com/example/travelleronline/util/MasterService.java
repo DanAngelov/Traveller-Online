@@ -2,6 +2,7 @@ package com.example.travelleronline.util;
 
 import com.example.travelleronline.categories.CategoryRepository;
 import com.example.travelleronline.comments.CommentRepository;
+import com.example.travelleronline.hashtags.HashtagRepository;
 import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.PostRepository;
 import com.example.travelleronline.users.UserRepository;
@@ -24,5 +25,7 @@ public abstract class MasterService {
     protected UserRepository userRepository;
     @Autowired
     protected PostImageRepository postImageRepository;
+    @Autowired
+    protected HashtagRepository hashtagRepository;
 
 }

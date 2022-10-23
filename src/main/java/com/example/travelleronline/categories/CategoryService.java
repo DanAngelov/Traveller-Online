@@ -1,13 +1,14 @@
 package com.example.travelleronline.categories;
 
-import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 public class CategoryService extends MasterService {
@@ -17,16 +18,33 @@ public class CategoryService extends MasterService {
         Category c = new Category();
         c.setName(dto.getName());
         categoryRepository.save(c);
-        return modelMapper.map(c, CategoryDTO.class);
+        return dto;
+    }
+
+    private CategoryDTO mapCategoryToCategoryDTO(Category c) {
+        CategoryDTO dto = new CategoryDTO();
+        dto.setCategoryId(c.getCategoryId());
+        dto.setName(c.getName());
+        List<Integer> postIds = new ArrayList<>();
+        for (Post p : c.getPosts()) {
+            postIds.add(p.getPostId());
+        }
+        dto.setPostIds(postIds);
+        return dto;
     }
 
     public List<CategoryDTO> getAllCategories(){
-        return  categoryRepository.findAll().stream().map(c -> modelMapper.map(c,CategoryDTO.class)).collect(Collectors.toList());
+        List<CategoryDTO> dtos = new ArrayList<>();
+        for (Category c : categoryRepository.findAll()){
+            CategoryDTO dto = mapCategoryToCategoryDTO(c);
+            dtos.add(dto);
+        }
+        return dtos;
     }
 
     public CategoryDTO getCategoryById(int id) {
         Category c = categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
-        return modelMapper.map(c, CategoryDTO.class);
+        return mapCategoryToCategoryDTO(c);
     }
 
     public CategoryDTO editCategory(CategoryDTO dto, int id) {
@@ -34,17 +52,15 @@ public class CategoryService extends MasterService {
         validateCategoryName(dto.getName());
         existingCategory.setName(dto.getName());
         categoryRepository.save(existingCategory);
-        return modelMapper.map(existingCategory, CategoryDTO.class);
+        return dto;
     }
 
     public void deleteCategoryById(int id) {
-        categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
-        categoryRepository.deleteById(id);
-    }//TODO not working
-
-    public void deleteAllCategories() {
-        categoryRepository.deleteAll();
-    }//TODO not working
+        Category c = categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
+        // Soft delete
+        c.setName("Deleted category" + System.nanoTime());
+        categoryRepository.save(c);
+    }
 
     private void validateCategoryName(String category){
         if(category == null || category.equals("null")) {

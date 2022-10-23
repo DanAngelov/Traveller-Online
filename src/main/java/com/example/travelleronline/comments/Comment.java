@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Table(name = "comments")
 public class Comment {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int commentId;
@@ -21,7 +20,7 @@ public class Comment {
     @Column
     private String content;
     @Column
-    private int parentId;
+    private int parentId;//TODO this might need to be Comment parentId;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)

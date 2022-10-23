@@ -1,7 +1,7 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.dtos.PostDTO;
+import com.example.travelleronline.posts.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -65,7 +65,7 @@ public class UserController extends MasterController {
     // News Feed
     @GetMapping("/news-feed") // TODO ? infinite scroll is correct
     public List<PostDTO> showNewsFeed(HttpServletRequest req, // TODO ??? List<PostDTO>
-                                        @RequestParam("days_min") int daysMin,
+                                      @RequestParam("days_min") int daysMin,
                                       @RequestParam("days_max") int daysMax) {
         validateLoggedIn(req);
         return userService.showNewsFeed(getUserId(req), daysMin, daysMax);
