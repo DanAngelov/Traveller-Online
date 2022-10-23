@@ -1,5 +1,6 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.comments.Comment;
@@ -45,7 +46,17 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<PostImage> postImages;
 
+    @ManyToMany(mappedBy = "taggedInPosts")
+    private List<User> taggedUsers;
 
-    //TODO pictures, likes/unlikes, dislikes/undislikes,
+    @ManyToMany
+    @JoinTable(
+            name = "postHashtags",
+            joinColumns = @JoinColumn(name = "post_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id", nullable = false)
+    )
+    private List<Hashtag> postHashtags;
+
+    //TODO likes/unlikes, dislikes/undislikes,
 
 }

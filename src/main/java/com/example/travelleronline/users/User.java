@@ -54,4 +54,12 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
 
+    @ManyToMany
+    @JoinTable(
+            name = "taggedInPosts",
+            joinColumns = @JoinColumn(name = "user_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "post_id", nullable = false)
+    )
+    private List<Post> taggedInPosts;
+
 }

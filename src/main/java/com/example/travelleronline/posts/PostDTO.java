@@ -21,5 +21,6 @@ public class PostDTO {
     private double locationLongitude;
     private List<String> comments;
     private List<String> postImages;
+    private List<Integer> taggedUsersIds;
 
 }

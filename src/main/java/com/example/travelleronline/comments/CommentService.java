@@ -23,7 +23,7 @@ public class CommentService extends MasterService {
         c.setCreatedAt(time);
         c.setContent(dto.getContent());
         c.setParentId(dto.getParentId());
-        User u = userRepository.findById(2).orElseThrow(() -> new NotFoundException("No such user."));//TODO get user from session
+        User u = userRepository.findById(23).orElseThrow(() -> new NotFoundException("No such user."));//TODO get user from session
         c.setUser(u);
         Post p = postRepository.findById(dto.getPostId()).orElseThrow(() -> new NotFoundException("No such post."));
         c.setPost(p);

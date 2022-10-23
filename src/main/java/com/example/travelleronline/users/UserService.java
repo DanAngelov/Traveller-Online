@@ -31,29 +31,29 @@ public class UserService extends MasterService {
 
     UserWithoutPassDTO register(RegisterDTO dto) {
         String password = dto.getPassword();
-        if (!password.equals(dto.getConfirmPassword())) {
-            throw new BadRequestException("Passwords mismatch.");
-        }
+//        if (!password.equals(dto.getConfirmPassword())) {
+//            throw new BadRequestException("Passwords mismatch.");
+//        }
         password = password.trim();
 
-        validateName(dto.getFirstName());
-        validateName(dto.getLastName());
+//        validateName(dto.getFirstName());
+//        validateName(dto.getLastName());
         String email = dto.getEmail().trim();
-        validateEmail(email);
+//        validateEmail(email);
         String phone = dto.getPhone();
-        validatePhone(phone);
-        validatePassword(password);
-        validateDateOfBirth(dto.getDateOfBirth());
-        validateGender(dto.getGender());
+//        validatePhone(phone);
+//        validatePassword(password);
+//        validateDateOfBirth(dto.getDateOfBirth());
+//        validateGender(dto.getGender());
 
-        if (userRepository.findAllByEmail(email).size() > 0) {
-            throw new BadRequestException("An user with this e-mail " +
-                    "has already been registered.");
-        }
-        if (userRepository.findAllByPhone(phone).size() > 0) {
-            throw new BadRequestException("An user with this phone number " +
-                    "has already been registered.");
-        }
+//        if (userRepository.findAllByEmail(email).size() > 0) {
+//            throw new BadRequestException("An user with this e-mail " +
+//                    "has already been registered.");
+//        }
+//        if (userRepository.findAllByPhone(phone).size() > 0) {
+//            throw new BadRequestException("An user with this phone number " +
+//                    "has already been registered.");
+//        }
 
         User user = modelMapper.map(dto, User.class);
         user.setPassword(bCryptPasswordEncoder.encode(password));
@@ -61,7 +61,7 @@ public class UserService extends MasterService {
         user.setCreatedAt(LocalDateTime.now());
         // TODO setDefaultProfilePic
         userRepository.save(user);
-        sendVerificationEmail(email, user.getUserId());
+//        sendVerificationEmail(email, user.getUserId());
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 

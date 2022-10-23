@@ -1,6 +1,7 @@
 package com.example.travelleronline.posts;
 
 import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -68,6 +69,11 @@ public class PostService extends MasterService {
             comments.add(c.getContent());
         }
         dto.setComments(comments);
+        List<Integer> taggedUsers = new ArrayList<>();
+        for (User u : p.getTaggedUsers()) {
+            taggedUsers.add(u.getUserId());
+        }
+        dto.setTaggedUsersIds(taggedUsers);
         return dto;
     }
 
@@ -115,8 +121,7 @@ public class PostService extends MasterService {
 
     private Category validateCategory(String category) {
         if (categoryRepository.findByName(category) != null) {
-            Category c = categoryRepository.findByName(category);
-            return c;
+            return categoryRepository.findByName(category);
         }
         throw new BadRequestException("No such category.");
     }
@@ -142,4 +147,38 @@ public class PostService extends MasterService {
         }
     }
 
+    public void tagUserToPost(int pid, int uid) {
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
+        p.getTaggedUsers().add(u);
+        u.getTaggedInPosts().add(p);
+        postRepository.save(p);
+        userRepository.save(u);
+    }
+
+    public PostDTO getPostByTitle(String title) {
+        Post p = postRepository.findByTitle(title);
+        if (p == null) {
+            throw new NotFoundException("No such post.");
+        }
+        return mapPostToDTO(p);
+    }
+
+    public void addHashtagToPost(int pid, String hashtag) {
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+        Hashtag tag = hashtagRepository.findByName(hashtag);
+        if (tag == null) {
+            Hashtag newTag = new Hashtag();
+            newTag.setName(hashtag);
+            if(p.getPostHashtags().contains(newTag)) {
+                throw new BadRequestException("Hashtag already included in post.");
+            }
+            hashtagRepository.save(newTag);
+        }
+        if(p.getPostHashtags().contains(tag)) {
+            throw new BadRequestException("Hashtag already included in post.");
+        }
+        p.getPostHashtags().add(tag);
+        postRepository.save(p);
+    }
 }

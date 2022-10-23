@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
-@RequestMapping()
 public class PostController extends MasterController {
 
     @Autowired
@@ -30,6 +29,10 @@ public class PostController extends MasterController {
     public PostDTO getPostById(@PathVariable int id){
         return postService.getPostById(id);
     }
+    @GetMapping(value = "/posts/title/{title}")
+    public PostDTO getPostByTitle(@PathVariable String title){
+        return postService.getPostByTitle(title);
+    }
     @DeleteMapping(value = "/posts/{id}", headers = "password=4kd2!kd7@SE1")
     public void deletePostById(@PathVariable int id){
         postService.deletePostById(id);
@@ -37,6 +40,15 @@ public class PostController extends MasterController {
     @DeleteMapping(value = "/posts", headers = "password=4kd2!kd7@SE1")
     public void deleteAllPosts(){
         postService.deleteAllPosts();
+    }
+    @PostMapping(value = "/posts/{pid}/tag/{uid}")
+    public void tagUserToPost(@PathVariable int pid, @PathVariable int uid) {
+        postService.tagUserToPost(pid,uid);
+    }
+
+    @PostMapping(value = "/posts/{pid}/{hashtag}")
+    public void addHashtagToPost(@PathVariable int pid, @PathVariable String hashtag){
+        postService.addHashtagToPost(pid,hashtag);
     }
 
     //TODO Keep this function or not ?
