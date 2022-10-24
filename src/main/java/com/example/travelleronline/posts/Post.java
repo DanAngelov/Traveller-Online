@@ -32,24 +32,18 @@ public class Post {
     private double locationLatitude;
     @Column
     private double locationLongitude;
-
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
-
     @OneToMany(mappedBy = "post")
     private List<Comment> comments;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User owner;
-
     @OneToMany(mappedBy = "post")
     private List<PostImage> postImages;
-
     @ManyToMany(mappedBy = "taggedInPosts")
     private List<User> taggedUsers;
-
     @ManyToMany
     @JoinTable(
             name = "postHashtags",
@@ -57,7 +51,6 @@ public class Post {
             inverseJoinColumns = @JoinColumn(name = "hashtag_id", nullable = false)
     )
     private List<Hashtag> postHashtags;
-
     @OneToMany(mappedBy = "post")
     List<PostReaction> postReactions;
 

@@ -1,4 +1,4 @@
-package com.example.travelleronline.comments;
+package com.example.travelleronline.comments.dtos;
 
 import lombok.Data;
 
@@ -10,8 +10,5 @@ public class CommentDTO {
     private int commentId;
     private LocalDateTime createdAt;
     private String content;
-    private int parentId;
-    private int postId;
-    private int ownerId;
 
 }

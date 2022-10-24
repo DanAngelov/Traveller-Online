@@ -1,7 +1,6 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -63,23 +62,23 @@ public class UserController extends MasterController {
     }
 
     // News Feed
-    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
-    public List<PostDTO> showNewsFeed(HttpServletRequest req, // TODO ??? List<PostDTO>
-                                      @RequestParam("days_min") int daysMin,
-                                      @RequestParam("days_max") int daysMax) {
-        validateLoggedIn(req);
-        return userService.showNewsFeed(getUserId(req), daysMin, daysMax);
-    }
+//    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
+//    public List<PostDTO> showNewsFeed(HttpServletRequest req, // TODO ??? List<PostDTO>
+//                                      @RequestParam("days_min") int daysMin,
+//                                      @RequestParam("days_max") int daysMax) {
+//        validateLoggedIn(req);
+//        return userService.showNewsFeed(getUserId(req), daysMin, daysMax);
+//    }
 
     // Profile Page
-    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
-    public List<PostDTO> showPostsOfUser(HttpServletRequest req, @PathVariable int uid,
-                                         @RequestParam("days_min") int daysMin,
-                                         @RequestParam("days_max") int daysMax,
-                                         @RequestParam("order_by") String orderBy) {
-        validateLoggedIn(req);
-        return userService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
-    }
+//    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
+//    public List<PostDTO> showPostsOfUser(HttpServletRequest req, @PathVariable int uid,
+//                                         @RequestParam("days_min") int daysMin,
+//                                         @RequestParam("days_max") int daysMax,
+//                                         @RequestParam("order_by") String orderBy) {
+//        validateLoggedIn(req);
+//        return userService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
+//    }
 
     // unsubscribes after following visit
     @PutMapping("/users/{uid}/subscribe")

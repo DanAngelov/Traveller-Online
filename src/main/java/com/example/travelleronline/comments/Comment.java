@@ -23,15 +23,12 @@ public class Comment {
     private String content;
     @Column
     private int parentId;//TODO this might need to be Comment parentId;
-
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
     @OneToMany(mappedBy = "comment")
     List<CommentReaction> commentReactions;
 

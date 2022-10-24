@@ -1,23 +1,24 @@
 package com.example.travelleronline.posts;
 
-import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.hashtags.Hashtag;
-import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.posts.dtos.PostCreationDTO;
+import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.users.User;
+import com.example.travelleronline.users.dtos.UserWithoutPostDTO;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService extends MasterService {
 
-    public PostDTO createPost(PostDTO dto, int userId) {
+    public PostCreationDTO createPost(PostCreationDTO dto) {
         Category c = validatePost(dto);
         LocalDateTime time = LocalDateTime.now();
         dto.setDateOfUpload(time);
@@ -33,53 +34,16 @@ public class PostService extends MasterService {
         dto.setOwnerId(1);
         postRepository.save(p);
         dto.setPostId(p.getPostId());
-        //TODO check why this not working
-        c.getPosts().add(p);
+        c.getPosts().add(p);//TODO check
         categoryRepository.save(c);
         return dto;
     }
 
-    public List<PostDTO> getAllPosts() {
-        List<PostDTO> dtos = new ArrayList<>();
-        for (Post p : postRepository.findAll()){
-            PostDTO dto = mapPostToDTO(p);
-            dtos.add(dto);
-        }
-        return dtos;
-    }
-
-    private PostDTO mapPostToDTO(Post p) {
-        PostDTO dto = new PostDTO();
-        dto.setPostId(p.getPostId());
-        dto.setOwnerId(p.getOwner().getUserId());
-        dto.setCategory(p.getCategory().getName());
-        dto.setDescription(p.getDescription());
-        dto.setTitle(p.getTitle());
-        dto.setDateOfUpload(p.getDateOfUpload());
-        dto.setLocationLatitude(p.getLocationLatitude());
-        dto.setLocationLongitude(p.getLocationLongitude());
-        dto.setClipUri(p.getClipUri());
-        List<String> images = new ArrayList<>();
-        for (PostImage i : p.getPostImages()) {
-            images.add(i.getImageUri());
-        }
-        dto.setPostImages(images);
-        List<String> comments = new ArrayList<>();
-        for (Comment c : p.getComments()) {
-            comments.add(c.getContent());
-        }
-        dto.setComments(comments);
-        List<Integer> taggedUsers = new ArrayList<>();
-        for (User u : p.getTaggedUsers()) {
-            taggedUsers.add(u.getUserId());
-        }
-        dto.setTaggedUsersIds(taggedUsers);
-        return dto;
-    }
-
-    public PostDTO getPostById(int id) {
-        Post p = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
-        return mapPostToDTO(p);
+    public List<PostWithoutOwnerDTO> getAllPostsOfUser(int uid) {
+        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        UserWithoutPostDTO dto = modelMapper.map(u, UserWithoutPostDTO.class);
+        dto.setPosts(u.getPosts().stream().map(p -> modelMapper.map(p, PostWithoutOwnerDTO.class)).collect(Collectors.toList()));
+        return dto.getPosts();
     }
 
     public void deletePostById(int id) { //TODO check who is deleting(owner/admin/otherUser)
@@ -91,21 +55,18 @@ public class PostService extends MasterService {
         postRepository.deleteAll();
     }
 
-    //TODO Keep this function or not ?
-//    public PostDTO editPost(int id, PostDTO dto) { //TODO check who is editing(owner/admin/otherUser)
-//        validatePost(dto);
-//        Post existingPost = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
-//        existingPost.setTitle(dto.getTitle());
-//        existingPost.setDescription(dto.getDescription());
-//        existingPost.setCategory(dto.getCategory());
-//        existingPost.setClipUri(dto.getClipUri());
-//        existingPost.setLocationLatitude(dto.getLocationLatitude());
-//        existingPost.setLocationLongitude(dto.getLocationLongitude());
-//        postRepository.save(existingPost);
-//        return modelMapper.map(existingPost, PostDTO.class);
-//    }
+    public void editPost(int id, PostCreationDTO dto) { //TODO check who is editing(owner/admin/otherUser)
+        Category c = validatePost(dto);
+        Post existingPost = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
+        existingPost.setTitle(dto.getTitle());
+        existingPost.setDescription(dto.getDescription());
+        existingPost.setCategory(c);
+        existingPost.setLocationLatitude(dto.getLocationLatitude());
+        existingPost.setLocationLongitude(dto.getLocationLongitude());
+        postRepository.save(existingPost);
+    }
 
-    private Category validatePost(PostDTO dto) {
+    private Category validatePost(PostCreationDTO dto) {
         validateTitle(dto.getTitle());
         validateDescription(dto.getDescription());
         Category c = validateCategory(dto.getCategory());
@@ -139,12 +100,6 @@ public class PostService extends MasterService {
         if (title.length() < 3 || title.isBlank() || title.length() > 100) {
             throw new BadRequestException("Title must be between 3 and 100 letters");
         }
-        List<Post> posts = postRepository.findAll();
-        for (Post p : posts) {
-            if (p.getTitle().equals(title)) {
-                throw new BadRequestException("Title already exists.");
-            }
-        }
     }
 
     public void tagUserToPost(int pid, int uid) {
@@ -156,29 +111,42 @@ public class PostService extends MasterService {
         userRepository.save(u);
     }
 
-    public PostDTO getPostByTitle(String title) {
-        Post p = postRepository.findByTitle(title);
-        if (p == null) {
-            throw new NotFoundException("No such post.");
-        }
-        return mapPostToDTO(p);
+    public List<PostWithoutOwnerDTO> getPostsByTitle(String title) {
+        List<Post> posts = postRepository.findAllByTitle(title);
+        return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
     }
 
     public void addHashtagToPost(int pid, String hashtag) {
         Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
-        Hashtag tag = hashtagRepository.findByName(hashtag);
-        if (tag == null) {
-            Hashtag newTag = new Hashtag();
-            newTag.setName(hashtag);
-            if(p.getPostHashtags().contains(newTag)) {
-                throw new BadRequestException("Hashtag already included in post.");
+        for (Hashtag g : p.getPostHashtags()) {
+            if(g.getName().equals(hashtag)) {
+                throw new BadRequestException("Hashtag already included in post");
             }
-            hashtagRepository.save(newTag);
         }
-        if(p.getPostHashtags().contains(tag)) {
-            throw new BadRequestException("Hashtag already included in post.");
-        }
+        Hashtag tag = new Hashtag();
+        tag.setName(hashtag);
+        hashtagRepository.save(tag);
         p.getPostHashtags().add(tag);
         postRepository.save(p);
     }
+
+    public List<PostWithoutOwnerDTO> getPostsByHashtag(String hashtag) {
+        Hashtag tag = validateHashtag(hashtag);
+        List<Post> posts = postRepository.findAllByPostHashtags(tag);
+        return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
+    }
+
+    private Hashtag validateHashtag(String hashtag) {
+        if (hashtagRepository.findByName(hashtag) != null) {
+            return hashtagRepository.findByName(hashtag);
+        }
+        throw new BadRequestException("No such hashtag.");
+    }
+
+    public List<PostWithoutOwnerDTO> getPostsByCategory(String category) {
+        Category c = validateCategory(category);
+        List<Post> posts = postRepository.findAllByCategory(c);
+        return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
+    }
+
 }

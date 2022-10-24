@@ -4,7 +4,6 @@ import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.posts.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
@@ -147,42 +146,42 @@ public class UserService extends MasterService {
         }
     }
 
-    List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
-        List<PostDTO> postsInNewsFeed = new ArrayList<>();
-        List<User> subscriptions = getVerifiedUserById(uid).getSubscriptions();
-        for (User u : subscriptions) {
-            Iterator<Post> it = u.getPosts().listIterator();
-            while (it.hasNext()) {
-                Post post = it.next();
-                long days = getDaysTillNow(post);
-                if (days >= daysMin && days <= daysMax) {
-                        postsInNewsFeed.add(modelMapper.map(post, PostDTO.class));
-                }
-            }
-        }
-        Collections.sort(postsInNewsFeed,
-                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
-        return postsInNewsFeed;
-    }
+//    List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
+//        List<PostDTO> postsInNewsFeed = new ArrayList<>();
+//        List<User> subscriptions = getVerifiedUserById(uid).getSubscriptions();
+//        for (User u : subscriptions) {
+//            Iterator<Post> it = u.getPosts().listIterator();
+//            while (it.hasNext()) {
+//                Post post = it.next();
+//                long days = getDaysTillNow(post);
+//                if (days >= daysMin && days <= daysMax) {
+//                        postsInNewsFeed.add(modelMapper.map(post, PostDTO.class));
+//                }
+//            }
+//        }
+//        Collections.sort(postsInNewsFeed,
+//                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+//        return postsInNewsFeed;
+//    }
 
-    List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
-        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
-                .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
-                .collect(Collectors.toList());
-        if (orderBy.equals("date")) {
-            Collections.sort(posts,
-                    (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
-        }
-        else if (orderBy.equals("likes")) {
-            // TODO !!!
-        }
-        else {
-            throw new BadRequestException("Wrong request parameters.");
-        }
-        return posts.stream()
-                .map(post -> modelMapper.map(post, PostDTO.class))
-                .collect(Collectors.toList());
-    }
+//    List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
+//        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
+//                .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
+//                .collect(Collectors.toList());
+//        if (orderBy.equals("date")) {
+//            Collections.sort(posts,
+//                    (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+//        }
+//        else if (orderBy.equals("likes")) {
+//            // TODO !!!
+//        }
+//        else {
+//            throw new BadRequestException("Wrong request parameters.");
+//        }
+//        return posts.stream()
+//                .map(post -> modelMapper.map(post, PostDTO.class))
+//                .collect(Collectors.toList());
+//    }
 
     int subscribe(int sid, int uid) {
         User subscriber = getVerifiedUserById(sid);
