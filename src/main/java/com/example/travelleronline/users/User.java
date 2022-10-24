@@ -2,6 +2,8 @@ package com.example.travelleronline.users;
 
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.posts.Post;
+import com.example.travelleronline.reactings.CommentReaction;
+import com.example.travelleronline.reactings.PostReaction;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -9,8 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity(name = "users")
+@Entity
 @Data
+@Table(name = "users")
 public class User {
 
     @Id
@@ -61,5 +64,11 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "post_id", nullable = false)
     )
     private List<Post> taggedInPosts;
+
+    @OneToMany(mappedBy = "user")
+    List<PostReaction> postReactions;
+
+    @OneToMany(mappedBy = "user")
+    List<CommentReaction> commentReactions;
 
 }

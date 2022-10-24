@@ -1,11 +1,13 @@
 package com.example.travelleronline.comments;
 
 import com.example.travelleronline.posts.Post;
+import com.example.travelleronline.reactings.CommentReaction;
 import com.example.travelleronline.users.User;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -30,5 +32,7 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "comment")
+    List<CommentReaction> commentReactions;
 
 }

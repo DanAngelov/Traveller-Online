@@ -4,6 +4,7 @@ import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.reactings.PostReaction;
 import com.example.travelleronline.users.User;
 import lombok.*;
 
@@ -57,6 +58,7 @@ public class Post {
     )
     private List<Hashtag> postHashtags;
 
-    //TODO likes/unlikes, dislikes/undislikes,
+    @OneToMany(mappedBy = "post")
+    List<PostReaction> postReactions;
 
 }
