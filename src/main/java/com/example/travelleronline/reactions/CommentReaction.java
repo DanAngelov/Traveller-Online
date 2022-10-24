@@ -1,4 +1,4 @@
-package com.example.travelleronline.reactings;
+package com.example.travelleronline.reactions;
 
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.users.User;
@@ -24,6 +24,6 @@ public class CommentReaction {
     @JoinColumn(name = "comment_id")
     Comment comment;
 
-    boolean reaction;
+    boolean isLike;
 
 }

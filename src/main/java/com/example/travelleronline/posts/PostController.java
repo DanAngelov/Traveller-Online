@@ -51,6 +51,23 @@ public class PostController extends MasterController {
         postService.addHashtagToPost(pid,hashtag);
     }
 
+    // News Feed
+    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
+    public List<PostDTO> showNewsFeed(HttpServletRequest req,
+                                      @RequestParam("days_min") int daysMin, // TODO ? ??? List<PostDTO>
+                                      @RequestParam("days_max") int daysMax) {
+        return postService.showNewsFeed(userController.getUserId(req), daysMin, daysMax);
+    }
+
+    // Profile Page
+    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
+    public List<PostDTO> showPostsOfUser(@PathVariable int uid,
+                                         @RequestParam("days_min") int daysMin,
+                                         @RequestParam("days_max") int daysMax,
+                                         @RequestParam("order_by") String orderBy) {
+        return postService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
+    }
+
     //TODO Keep this function or not ?
 //    @PutMapping("/posts/{id}")
 //    public PostDTO editPost(@PathVariable int id, @RequestBody PostDTO dto){

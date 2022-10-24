@@ -3,8 +3,6 @@ package com.example.travelleronline.users;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.posts.PostDTO;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
@@ -61,11 +59,12 @@ public class UserService extends MasterService {
 
         User user = modelMapper.map(dto, User.class);
         user.setPassword(bCryptPasswordEncoder.encode(password));
-        user.setVerified(false);
+//        user.setVerified(false); TODO bring back
+        user.setVerified(true); // TODO erase
         user.setCreatedAt(LocalDateTime.now());
         // TODO setDefaultProfilePic
         userRepository.save(user);
-        sendVerificationEmail(email, user.getUserId());
+//        sendVerificationEmail(email, user.getUserId()); TODO bring back
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 
@@ -113,7 +112,7 @@ public class UserService extends MasterService {
         name = name.toLowerCase().trim();
         if (!name.contains("_")) {
             List<UserProfileDTO> userProfiles =
-                    userRepository.findAllByFirstNameOrLastName(name, name).stream()
+                    userRepository.findAllByFirstNameLikeOrLastNameLike(name, name).stream()
                         .filter(user -> user.isVerified())
                         .map(user -> modelMapper.map(user, UserProfileDTO.class))
                         .collect(Collectors.toList());
@@ -127,12 +126,12 @@ public class UserService extends MasterService {
             if (names.length > 2) {
                 throw new BadRequestException("Too many spaces in the text.");
             }
-            List<User> users = userRepository.findAllByFirstName(names[0]).stream()
+            List<User> users = userRepository.findAllByFirstNameLike(names[0]).stream()
                     .filter(user -> user.isVerified())
                     .filter(user -> user.getLastName().equalsIgnoreCase(names[1]))
                     .collect(Collectors.toList());
             users.addAll(
-                    userRepository.findAllByLastName(names[1]).stream()
+                    userRepository.findAllByLastNameLike(names[1]).stream()
                             .filter(user -> user.isVerified())
                             .filter(user -> user.getLastName().equalsIgnoreCase(names[0]))
                             .collect(Collectors.toList())
@@ -145,43 +144,6 @@ public class UserService extends MasterService {
             }
             return userProfiles;
         }
-    }
-
-    List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
-        List<PostDTO> postsInNewsFeed = new ArrayList<>();
-        List<User> subscriptions = getVerifiedUserById(uid).getSubscriptions();
-        for (User u : subscriptions) {
-            Iterator<Post> it = u.getPosts().listIterator();
-            while (it.hasNext()) {
-                Post post = it.next();
-                long days = getDaysTillNow(post);
-                if (days >= daysMin && days <= daysMax) {
-                        postsInNewsFeed.add(modelMapper.map(post, PostDTO.class));
-                }
-            }
-        }
-        Collections.sort(postsInNewsFeed,
-                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
-        return postsInNewsFeed;
-    }
-
-    List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
-        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
-                .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
-                .collect(Collectors.toList());
-        if (orderBy.equals("date")) {
-            Collections.sort(posts,
-                    (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
-        }
-        else if (orderBy.equals("likes")) {
-            // TODO !!!
-        }
-        else {
-            throw new BadRequestException("Wrong request parameters.");
-        }
-        return posts.stream()
-                .map(post -> modelMapper.map(post, PostDTO.class))
-                .collect(Collectors.toList());
     }
 
     int subscribe(int sid, int uid) {
@@ -258,17 +220,13 @@ public class UserService extends MasterService {
         emailSender.send(message);
     }
 
-    private User getVerifiedUserById(int uid) {
+    public User getVerifiedUserById(int uid) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User not found."));
         if (!user.isVerified()) {
             throw new BadRequestException("The user is not verified.");
         }
         return user;
-    }
-
-    private long getDaysTillNow(Post post) {
-        return DAYS.between(post.getDateOfUpload().toLocalDate(), LocalDate.now());
     }
 
     // user's info and password validations
