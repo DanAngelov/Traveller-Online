@@ -8,17 +8,30 @@ import com.example.travelleronline.posts.dtos.PostCreationDTO;
 import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserWithoutPostDTO;
+import com.example.travelleronline.users.UserService;
 import com.example.travelleronline.util.MasterService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
 public class PostService extends MasterService {
 
     public PostCreationDTO createPost(PostCreationDTO dto) {
+    @Autowired
+    UserService userService;
+
+    public PostDTO createPost(PostDTO dto, int userId) {
         Category c = validatePost(dto);
         LocalDateTime time = LocalDateTime.now();
         dto.setDateOfUpload(time);
@@ -147,6 +160,49 @@ public class PostService extends MasterService {
         Category c = validateCategory(category);
         List<Post> posts = postRepository.findAllByCategory(c);
         return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
+    }
+
+}
+
+    public List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
+        List<PostDTO> postsInNewsFeed = new ArrayList<>();
+        List<User> subscriptions = userService.getVerifiedUserById(uid).getSubscriptions();
+        for (User u : subscriptions) {
+            Iterator<Post> it = u.getPosts().listIterator();
+            while (it.hasNext()) {
+                Post post = it.next();
+                long days = getDaysTillNow(post);
+                if (days >= daysMin && days <= daysMax) {
+                    postsInNewsFeed.add(modelMapper.map(post, PostDTO.class));
+                }
+            }
+        }
+        Collections.sort(postsInNewsFeed,
+                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+        return postsInNewsFeed;
+    }
+
+    public List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
+        List<Post> posts = userService.getVerifiedUserById(uid).getPosts().stream()
+                .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
+                .collect(Collectors.toList());
+        if (orderBy.equals("date")) {
+            Collections.sort(posts,
+                    (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
+        }
+        else if (orderBy.equals("likes")) {
+            // TODO !!!
+        }
+        else {
+            throw new BadRequestException("Wrong request parameters.");
+        }
+        return posts.stream()
+                .map(post -> modelMapper.map(post, PostDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    private long getDaysTillNow(Post post) {
+        return DAYS.between(post.getDateOfUpload().toLocalDate(), LocalDate.now());
     }
 
 }

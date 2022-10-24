@@ -12,11 +12,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     List<User> findAllByPhone (String phone);
 
-    List<User> findAllByFirstNameOrLastName(String firstName, String lastName);
+    List<User> findAllByFirstNameLikeOrLastNameLike(String firstName, String lastName);
 
-    List<User> findAllByFirstName(String name);
+    List<User> findAllByFirstNameLike(String name);
 
-    List<User> findAllByLastName(String name);
+    List<User> findAllByLastNameLike(String name);
 
     List<User> findAllByIsVerified (boolean isVerified);
 

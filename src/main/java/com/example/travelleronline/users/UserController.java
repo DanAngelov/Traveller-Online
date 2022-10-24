@@ -21,18 +21,18 @@ public class UserController extends MasterController {
     // Front-end(originally): Avoid spaces at the beginning and at the end.
     // Front-end(afterwards): A verification email has been sent to: ...
     // ...You have ten days to verify your email.
-    @PostMapping("/app/registration")
+    @PostMapping("users/registration")
     @ResponseStatus(code = HttpStatus.CREATED)
     public UserWithoutPassDTO register(@RequestBody RegisterDTO dto) {
         return userService.register(dto);
     }
 
-    @PutMapping(value = "/app/verify-email/{token}")
+    @PutMapping(value = "users/email-verification/{token}")
     public void verifyEmail(@PathVariable String token) {
         userService.verifyEmail(token);
     }
 
-    @PostMapping("/app/login")
+    @PostMapping("users/login")
     public UserProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
         HttpSession session = req.getSession();;
         if (session.getAttribute(LOGGED) != null && (boolean) session.getAttribute(LOGGED)) {
@@ -44,7 +44,7 @@ public class UserController extends MasterController {
         return result;
     }
 
-    @PutMapping("/app/logout")
+    @PutMapping("users/logout")
     public void logOut(HttpSession session) {
         session.invalidate();
     }
@@ -60,25 +60,6 @@ public class UserController extends MasterController {
         validateLoggedIn(req);
         return userService.getAllByName(name);
     }
-
-    // News Feed
-//    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
-//    public List<PostDTO> showNewsFeed(HttpServletRequest req, // TODO ??? List<PostDTO>
-//                                      @RequestParam("days_min") int daysMin,
-//                                      @RequestParam("days_max") int daysMax) {
-//        validateLoggedIn(req);
-//        return userService.showNewsFeed(getUserId(req), daysMin, daysMax);
-//    }
-
-    // Profile Page
-//    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
-//    public List<PostDTO> showPostsOfUser(HttpServletRequest req, @PathVariable int uid,
-//                                         @RequestParam("days_min") int daysMin,
-//                                         @RequestParam("days_max") int daysMax,
-//                                         @RequestParam("order_by") String orderBy) {
-//        validateLoggedIn(req);
-//        return userService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
-//    }
 
     // unsubscribes after following visit
     @PutMapping("/users/{uid}/subscribe")
@@ -113,7 +94,7 @@ public class UserController extends MasterController {
         userService.editUserPass(dto, getUserId(req));
     }
 
-    @DeleteMapping("/users/delete-user")
+    @DeleteMapping("/users")
     public void deleteById(HttpServletRequest req) {
         validateLoggedIn(req);
         userService.deleteById(getUserId(req));

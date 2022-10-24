@@ -1,4 +1,4 @@
-package com.example.travelleronline.reactings;
+package com.example.travelleronline.reactions;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -2,8 +2,8 @@ package com.example.travelleronline.users;
 
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.reactings.CommentReaction;
-import com.example.travelleronline.reactings.PostReaction;
+import com.example.travelleronline.reactions.CommentReaction;
+import com.example.travelleronline.reactions.PostReaction;
 import lombok.Data;
 
 import javax.persistence.*;
