@@ -1,7 +1,7 @@
 package com.example.travelleronline.comments;
 
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.reactions.CommentReaction;
+import com.example.travelleronline.reactions.toComment.CommentReaction;
 import com.example.travelleronline.users.User;
 import lombok.Data;
 

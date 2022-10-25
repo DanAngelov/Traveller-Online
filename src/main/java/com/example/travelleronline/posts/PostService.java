@@ -6,8 +6,11 @@ import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.reactions.LikesDislikesDTO;
+import com.example.travelleronline.reactions.toPost.PostReaction;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.UserService;
+import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -195,7 +198,7 @@ public class PostService extends MasterService {
 
     public List<PostDTO> showNewsFeed(int uid, int daysMin, int daysMax) {
         List<PostDTO> postsInNewsFeed = new ArrayList<>();
-        List<User> subscriptions = userService.getVerifiedUserById(uid).getSubscriptions();
+        List<User> subscriptions = getVerifiedUserById(uid).getSubscriptions();
         for (User u : subscriptions) {
             Iterator<Post> it = u.getPosts().listIterator();
             while (it.hasNext()) {
@@ -212,7 +215,7 @@ public class PostService extends MasterService {
     }
 
     public List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
-        List<Post> posts = userService.getVerifiedUserById(uid).getPosts().stream()
+        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
                 .filter(post -> (getDaysTillNow(post) >= daysMin && getDaysTillNow(post) <= daysMax))
                 .collect(Collectors.toList());
         if (orderBy.equals("date")) {
@@ -230,8 +233,66 @@ public class PostService extends MasterService {
                 .collect(Collectors.toList());
     }
 
+    public LikesDislikesDTO reactTo(int uid, int pid, String reaction) {
+        User user = getVerifiedUserById(uid);
+        Post post = postRepository.findById(pid)
+                .orElseThrow(() -> new NotFoundException("Post not found"));
+        PostReaction postReaction = new PostReaction();
+        postReaction.setUser(user);
+        postReaction.setPost(post);
+        if (reaction.equals("like")) {
+            postReaction.setLike(true);
+        }
+        else if (reaction.equals("dislike")) {
+            postReaction.setLike(false);
+        }
+        else {
+            throw new BadRequestException("Unknown value for parameter \"reaction\".");
+        }
+        List<PostReaction> reactionsSamePostAndUser = postReactRepo.findAllByUserAndPost(user, post);
+        if (reactionsSamePostAndUser.size() == 0) {
+            postReactRepo.save(postReaction);
+        }
+        else {
+            PostReaction oldPostReaction = reactionsSamePostAndUser.get(0);
+            postReactRepo.delete(oldPostReaction);
+            if (oldPostReaction.isLike() != postReaction.isLike()) {
+                postReactRepo.save(postReaction);
+            }
+        }
+        LikesDislikesDTO dto = new LikesDislikesDTO();
+        dto.setLikes(post.getPostReactions().stream()
+                .filter(pr -> pr.isLike())
+                .collect(Collectors.toList())
+                .size());
+        dto.setDislikes(post.getPostReactions().stream()
+                .filter(pr -> !pr.isLike())
+                .collect(Collectors.toList())
+                .size()); // TODO ? can be refactored or not
+        return dto;
+    }
+
+    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int pid, String reaction) {
+        Post post = postRepository.findById(pid)
+            .orElseThrow(() -> new NotFoundException("Post not found."));
+        if (reaction.equals("like")) {
+            return post.getPostReactions().stream()
+                    .filter(pr -> pr.isLike())
+                    .map(pr -> modelMapper.map(pr.getUser(), UserIdNamesPhotoDTO.class))
+                    .collect(Collectors.toList());
+        }
+        else if (reaction.equals("dislike")) {
+            return post.getPostReactions().stream()
+                    .filter(pr -> !pr.isLike())
+                    .map(pr -> modelMapper.map(pr.getUser(), UserIdNamesPhotoDTO.class))
+                    .collect(Collectors.toList());
+        }
+        else {
+            throw new BadRequestException("Unknown value for parameter \"reaction\".");
+        }
+    }
+
     private long getDaysTillNow(Post post) {
         return DAYS.between(post.getDateOfUpload().toLocalDate(), LocalDate.now());
     }
-
 }

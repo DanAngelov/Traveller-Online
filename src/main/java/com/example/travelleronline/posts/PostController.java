@@ -1,11 +1,14 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.UserController;
+import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -66,6 +69,20 @@ public class PostController extends MasterController {
                                          @RequestParam("days_max") int daysMax,
                                          @RequestParam("order_by") String orderBy) {
         return postService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
+    }
+
+    @PutMapping("/posts/{pid}/react")
+    public LikesDislikesDTO reactTo(@PathVariable int pid,
+                                    @RequestParam("reaction") String reaction,
+                                        HttpSession session) {
+        int uid = (int) session.getAttribute(USER_ID);
+        return postService.reactTo(uid, pid, reaction);
+    }
+
+    @GetMapping("/posts/{pid}/users")
+    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid,
+                                                      @RequestParam("reaction") String reaction) {
+        return postService.getUsersWhoReacted(pid, reaction);
     }
 
     //TODO Keep this function or not ?

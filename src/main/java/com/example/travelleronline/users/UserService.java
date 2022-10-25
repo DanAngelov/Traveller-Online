@@ -147,6 +147,9 @@ public class UserService extends MasterService {
     }
 
     int subscribe(int sid, int uid) {
+        if (sid == uid) {
+            throw new BadRequestException("User cannot subscribe to himself.");
+        }
         User subscriber = getVerifiedUserById(sid);
         User user = getVerifiedUserById(uid);
         if(user.getSubscribers().contains(subscriber)) {
@@ -218,15 +221,6 @@ public class UserService extends MasterService {
                 "http://localhost:7000/app/verify-email/" + token);
         //http://traveller-online.bg/app/verify-email/...
         emailSender.send(message);
-    }
-
-    public User getVerifiedUserById(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
-        if (!user.isVerified()) {
-            throw new BadRequestException("The user is not verified.");
-        }
-        return user;
     }
 
     // user's info and password validations
