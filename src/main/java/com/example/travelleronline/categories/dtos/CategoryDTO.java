@@ -1,14 +1,11 @@
-package com.example.travelleronline.categories;
+package com.example.travelleronline.categories.dtos;
 
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class CategoryDTO {
 
     private int categoryId;
     private String name;
-    private List<Integer> postIds;
 
 }

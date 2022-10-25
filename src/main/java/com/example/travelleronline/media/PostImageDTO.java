@@ -8,6 +8,5 @@ public class PostImageDTO {
 
     private int imageId;
     private String imageUri;
-    private int postId;
 
 }

@@ -1,13 +1,13 @@
 package com.example.travelleronline.categories;
 
+import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
-import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -21,30 +21,10 @@ public class CategoryService extends MasterService {
         return dto;
     }
 
-    private CategoryDTO mapCategoryToCategoryDTO(Category c) {
-        CategoryDTO dto = new CategoryDTO();
-        dto.setCategoryId(c.getCategoryId());
-        dto.setName(c.getName());
-        List<Integer> postIds = new ArrayList<>();
-        for (Post p : c.getPosts()) {
-            postIds.add(p.getPostId());
-        }
-        dto.setPostIds(postIds);
-        return dto;
-    }
 
     public List<CategoryDTO> getAllCategories(){
-        List<CategoryDTO> dtos = new ArrayList<>();
-        for (Category c : categoryRepository.findAll()){
-            CategoryDTO dto = mapCategoryToCategoryDTO(c);
-            dtos.add(dto);
-        }
-        return dtos;
-    }
-
-    public CategoryDTO getCategoryById(int id) {
-        Category c = categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found."));
-        return mapCategoryToCategoryDTO(c);
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream().map(c -> modelMapper.map(c,CategoryDTO.class)).collect(Collectors.toList());
     }
 
     public CategoryDTO editCategory(CategoryDTO dto, int id) {

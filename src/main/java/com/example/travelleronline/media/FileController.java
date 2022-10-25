@@ -1,7 +1,6 @@
 package com.example.travelleronline.media;
 
 import com.example.travelleronline.users.UserController;
-import com.example.travelleronline.users.UserService;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +28,7 @@ public class FileController extends MasterController {
     }
 
     @PostMapping("/users/change-image")
-    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image,
-                                   HttpServletRequest req) {
+    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image, HttpServletRequest req) {
         userController.validateLoggedIn(req);
         fileService.changeProfileImage(userController.getUserId(req), image);
     }

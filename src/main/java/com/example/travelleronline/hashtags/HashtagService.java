@@ -1,8 +1,7 @@
 package com.example.travelleronline.hashtags;
 
-import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
-import com.example.travelleronline.posts.PostDTO;
+import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,6 @@ public class HashtagService extends MasterService {
     public HashtagDTO createHashtag(HashtagDTO dto) {
         validateHashtag(dto.getName());
         Hashtag hashtag = new Hashtag();
-        hashtag.setHashtagId(dto.getHashtagId());
         hashtag.setName(dto.getName());
         hashtagRepository.save(hashtag);
         dto.setHashtagId(hashtag.getHashtagId());

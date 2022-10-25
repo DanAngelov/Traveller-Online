@@ -1,5 +1,7 @@
 package com.example.travelleronline.comments;
 
+import com.example.travelleronline.comments.dtos.CommentDTO;
+import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.posts.Post;
@@ -12,49 +14,32 @@ import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class CommentService extends MasterService {
-    public CommentDTO createComment(int pid, CommentDTO dto, int id) {
-        //TODO validate user
+    public CommentDTO createComment(int pid, CommentDTO dto) {
+        //TODO validate if user is logged in and take user id from session.
         validatePostId(pid);
         validateComment(dto);
-        LocalDateTime time = LocalDateTime.now();
-        dto.setCreatedAt(time);
         Comment c = new Comment();
-        c.setCreatedAt(time);
+        c.setCreatedAt(LocalDateTime.now());
         c.setContent(dto.getContent());
-        c.setParentId(dto.getParentId());
-        User u = userRepository.findById(23).orElseThrow(() -> new NotFoundException("No such user."));//TODO get user from session
+        User u = userRepository.findById(1).orElseThrow(() -> new NotFoundException("No such user."));//TODO get user from session
         c.setUser(u);
-        Post p = postRepository.findById(dto.getPostId()).orElseThrow(() -> new NotFoundException("No such post."));
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("No such post."));
         c.setPost(p);
         commentRepository.save(c);
-        dto.setCommentId(c.getCommentId());
         return dto;
     }
 
-    private CommentDTO mapCommentToCommentDTO(Comment c) {
-        CommentDTO dto = new CommentDTO();
-        dto.setCommentId(c.getCommentId());
-        dto.setContent(c.getContent());
-        dto.setCreatedAt(c.getCreatedAt());
-        dto.setOwnerId(c.getUser().getUserId());
-        dto.setPostId(c.getPost().getPostId());
-        dto.setParentId(c.getParentId());
-        return dto;
-    }
-
-    public CommentDTO editComment(int pid, int cid, CommentDTO dto) {
+    public void editComment(int pid, int cid, CommentDTO dto) {
         validatePostId(pid);
         validateComment(dto);
         Comment existingComment = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
         existingComment.setContent(dto.getContent());
         commentRepository.save(existingComment);
-        return modelMapper.map(existingComment,CommentDTO.class);
     }
 
     public void deleteComment(int pid, int cid) {
@@ -82,14 +67,10 @@ public class CommentService extends MasterService {
         commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
     }
 
-    public List<CommentDTO> getAllPostComments(int pid) {
+    public List<CommentWithoutPostDTO> getPostComments(int pid) {
         Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
-        List<CommentDTO> dtos = new ArrayList<>();
-        for (Comment c : p.getComments()) {
-            CommentDTO dto = mapCommentToCommentDTO(c);
-            dtos.add(dto);
-        }
-        return dtos;
+        List<Comment> postComments = p.getComments();
+        return postComments.stream().map(c -> modelMapper.map(c, CommentWithoutPostDTO.class)).collect(Collectors.toList());
     }
 
     public LikesDislikesDTO reactTo(int uid, int cid, String reaction) {

@@ -3,6 +3,8 @@ package com.example.travelleronline.comments;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.UserController;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
+import com.example.travelleronline.comments.dtos.CommentDTO;
+import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,18 +23,17 @@ public class CommentController extends MasterController {
     private UserController userController;
 
     @GetMapping(value = "/posts/{pid}/comments")
-    public List<CommentDTO> getAllPostComments(@PathVariable int pid) {
-        return commentService.getAllPostComments(pid);
+    public List<CommentWithoutPostDTO> getPostComments(@PathVariable int pid) {
+        return commentService.getPostComments(pid);
     }
     @PostMapping("/posts/{pid}/comments")
-    public CommentDTO createComment(@PathVariable int pid, @RequestBody CommentDTO dto, HttpServletRequest req){
-        int userId = userController.getUserId(req);
-        return commentService.createComment(pid,dto,userId);
+    public CommentDTO createComment(@PathVariable int pid, @RequestBody CommentDTO dto){
+        return commentService.createComment(pid,dto);
     }
     //TODO fix not working
     @PutMapping("/posts/{pid}/comments/{cid}")
-    public CommentDTO editComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentDTO dto){
-        return commentService.editComment(pid,cid,dto);
+    public void editComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentDTO dto){
+        commentService.editComment(pid,cid,dto);
     }
     @DeleteMapping("/posts/{pid}/comments/{cid}")
     public void deleteComment(@PathVariable int pid, @PathVariable int cid){

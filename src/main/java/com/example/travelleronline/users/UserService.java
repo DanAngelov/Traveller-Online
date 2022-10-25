@@ -3,6 +3,7 @@ package com.example.travelleronline.users;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
