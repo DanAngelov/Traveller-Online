@@ -34,12 +34,12 @@ public class PostController extends MasterController {
     @GetMapping(value = "/posts/titles/{title}")
     public List<PostWithoutOwnerDTO> getPostsByTitle(@PathVariable String title){
         return postService.getPostsByTitle(title);
-    }
+    } // TODO should be refactored -> one endpoint (Dan)
 
     @GetMapping(value = "/posts/hashtags/{hashtag}")
     public List<PostWithoutOwnerDTO> getPostsByHashtag(@PathVariable String hashtag){
         return postService.getPostsByHashtag(hashtag);
-    }
+    } // TODO should be refactored -> one endpoint (Dan)
 
     @GetMapping(value = "/posts/categories/{category}")
     public List<PostWithoutOwnerDTO> getPostsByCategory(@PathVariable String category){

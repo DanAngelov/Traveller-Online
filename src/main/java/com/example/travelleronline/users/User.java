@@ -38,6 +38,8 @@ public class User {
     @Column
     private LocalDateTime createdAt;
     @Column
+    private LocalDateTime lastLoginAt;
+    @Column
     private boolean isVerified;
 
     @ManyToMany

@@ -129,13 +129,13 @@ public class PostService extends MasterService {
     public List<PostWithoutOwnerDTO> getPostsByTitle(String title) {
         List<Post> posts = postRepository.findAllByTitle(title);
         return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
-    }
+    }  // TODO should be refactored -> one endpoint (Dan)
 
     public List<PostWithoutOwnerDTO> getPostsByHashtag(String hashtag) {
         Hashtag tag = validateHashtag(hashtag);
         List<Post> posts = postRepository.findAllByPostHashtags(tag);
         return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
-    }
+    }  // TODO should be refactored -> one endpoint (Dan)
 
     public void addHashtagToPost(int pid, String hashtag) {
         Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));

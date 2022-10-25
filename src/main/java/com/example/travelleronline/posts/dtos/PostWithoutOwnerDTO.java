@@ -4,7 +4,7 @@ import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.media.PostImageDTO;
-import com.example.travelleronline.reactions.PostReaction;
+import com.example.travelleronline.reactions.toPost.PostReaction;
 import com.example.travelleronline.users.dtos.UserWithoutPassDTO;
 import lombok.Data;
 
