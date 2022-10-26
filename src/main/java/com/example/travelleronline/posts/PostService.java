@@ -1,25 +1,21 @@
 package com.example.travelleronline.posts;
 
-import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
 import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.users.User;
-import com.example.travelleronline.users.dtos.UserWithoutPostDTO;
 import com.example.travelleronline.users.UserService;
+import com.example.travelleronline.users.dtos.UserWithoutPostDTO;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -53,9 +49,7 @@ public class PostService extends MasterService {
 
     public List<PostWithoutOwnerDTO> getPostsOfUser(int uid) {
         User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
-        UserWithoutPostDTO dto = modelMapper.map(u, UserWithoutPostDTO.class);
-        dto.setPosts(u.getPosts().stream().map(p -> modelMapper.map(p, PostWithoutOwnerDTO.class)).collect(Collectors.toList()));
-        return dto.getPosts();
+        return u.getPosts().stream().map(p -> modelMapper.map(p, PostWithoutOwnerDTO.class)).collect(Collectors.toList());
     }
 
     public void deletePostById(int id) { //TODO check who is deleting(owner/admin/otherUser)

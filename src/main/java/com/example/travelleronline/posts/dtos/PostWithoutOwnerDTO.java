@@ -5,6 +5,7 @@ import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.media.PostImageDTO;
 import com.example.travelleronline.reactions.PostReaction;
+import com.example.travelleronline.users.dtos.UserCommentDTO;
 import com.example.travelleronline.users.dtos.UserWithoutPassDTO;
 import lombok.Data;
 
@@ -24,7 +25,7 @@ public class PostWithoutOwnerDTO {
     private CategoryDTO category;
     private List<CommentDTO> comments;
     private List<PostImageDTO> postImages;
-    private List<UserWithoutPassDTO> taggedUsers;
+    private List<UserCommentDTO> taggedUsers;
     private List<HashtagDTO> postHashtags;
-    private List<PostReaction> postReactions;//TODO future me GL HF
+//    private List<PostReaction> postReactions;//TODO future me GL HF
 }

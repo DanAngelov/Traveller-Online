@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class HashtagDTO {
 
-    private int hashtagId;
     private String name;
 
 }

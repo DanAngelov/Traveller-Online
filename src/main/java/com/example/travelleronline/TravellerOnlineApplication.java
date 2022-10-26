@@ -22,6 +22,10 @@ public class TravellerOnlineApplication {
 
     @Bean
     public ModelMapper modelMapper() {
+//        ModelMapper m = new ModelMapper();
+//        modelMapper.getConfiguration()
+//                .setFieldMatchingEnabled(true)
+//                .setFieldAccessLevel(AccessLevel.PRIVATE);
         return new ModelMapper();
     }
 
