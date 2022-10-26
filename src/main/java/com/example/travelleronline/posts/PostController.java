@@ -54,12 +54,6 @@ public class PostController extends MasterController {
         postService.tagUserToPost(pid,uid);
     }
 
-    @PostMapping(value = "/posts/{pid}/{hashtag}")
-    public void addHashtagToPost(@PathVariable int pid, @PathVariable String hashtag,HttpSession session){
-        int uid = getUserId(session);
-        postService.addHashtagToPost(pid, hashtag, uid);
-    }
-
     @PutMapping("/posts/{pid}")
     public void editPost(@PathVariable int pid, @RequestBody PostCreationDTO dto, HttpSession session){
         int uid = getUserId(session);

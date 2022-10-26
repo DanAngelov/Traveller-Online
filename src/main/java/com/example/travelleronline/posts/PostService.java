@@ -134,32 +134,6 @@ public class PostService extends MasterService {
         return posts.stream().map(p -> modelMapper.map(p,PostDTO.class)).collect(Collectors.toList());
     }  // TODO should be refactored -> one endpoint (Dan)
 
-    public void addHashtagToPost(int pid, String hashtag, int uid) {
-        Post p = validatePostOwner(pid, uid);
-        for (Hashtag g : p.getPostHashtags()) {
-            if(g.getName().equals(hashtag)) {
-                throw new BadRequestException("Hashtag already included in post");
-            }
-        }
-        Hashtag tag = hashtagRepository.findByName(hashtag);
-        if (tag == null) {
-            tag = new Hashtag();
-            tag.setName(hashtag);
-            hashtagRepository.save(tag);
-        }
-        p.getPostHashtags().add(tag);
-        postRepository.save(p);
-    }
-
-    private Post validatePostOwner(int pid, int uid) {
-        Post post = getPostById(pid);
-        User sessionUser = getVerifiedUserById(uid);
-        if(!sessionUser.equals(post.getOwner())) {
-            throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
-        }
-        return post;
-    }
-
     private Hashtag validateHashtag(String hashtag) {
         Hashtag tag = hashtagRepository.findByName(hashtag);
         if (tag != null) {

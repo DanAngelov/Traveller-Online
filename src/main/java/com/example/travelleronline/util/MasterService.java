@@ -6,6 +6,7 @@ import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.comments.CommentRepository;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.hashtags.HashtagRepository;
 import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.Post;
@@ -73,6 +74,15 @@ public abstract class MasterService {
     protected Comment getCommentById(int cid) {
         return commentRepository.findById(cid)
                 .orElseThrow(() -> new NotFoundException("Comment not found."));
+    }
+
+    protected Post validatePostOwner(int pid, int uid) {
+        Post post = getPostById(pid);
+        User sessionUser = getVerifiedUserById(uid);
+        if(!sessionUser.equals(post.getOwner())) {
+            throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
+        }
+        return post;
     }
 
     // Cron Job
