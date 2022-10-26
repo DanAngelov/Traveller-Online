@@ -144,9 +144,12 @@ public class PostService extends MasterService {
                 throw new BadRequestException("Hashtag already included in post");
             }
         }
-        Hashtag tag = new Hashtag();
-        tag.setName(hashtag);
-        hashtagRepository.save(tag);
+        Hashtag tag = hashtagRepository.findByName(hashtag);
+        if (tag == null) {
+            tag = new Hashtag();
+            tag.setName(hashtag);
+            hashtagRepository.save(tag);
+        }
         p.getPostHashtags().add(tag);
         postRepository.save(p);
     }
@@ -168,17 +171,7 @@ public class PostService extends MasterService {
 //                (p1, p2) -> p2.getDateOfUpload().compareTo(p1.getDateOfUpload()));
 //        return postsInNewsFeed;
 //    public List<PostWithoutOwnerDTO> getPostsByHashtag(String hashtag) {
-//        Hashtag tag = validateHashtag(hashtag);
-//        List<Post> posts = postRepository.findAllByPostHashtags(tag);
-//        return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
 //    }
-
-    private Hashtag validateHashtag(String hashtag) {
-        if (hashtagRepository.findByName(hashtag) != null) {
-            return hashtagRepository.findByName(hashtag);
-        }
-        throw new BadRequestException("No such hashtag.");
-    }
 
 //    public List<PostDTO> showPostsOfUser(int uid, int daysMin, int daysMax, String orderBy) {
 //        List<Post> posts = getVerifiedUserById(uid).getPosts().stream()
@@ -193,6 +186,13 @@ public class PostService extends MasterService {
 //        }
 //        throw new BadRequestException("No such hashtag.");
 //    }
+
+    private Hashtag validateHashtag(String hashtag) {
+        if (hashtagRepository.findByName(hashtag) != null) {
+            return hashtagRepository.findByName(hashtag);
+        }
+        throw new BadRequestException("No such hashtag.");
+    }
 
     public List<PostWithoutOwnerDTO> getPostsByCategory(String category) {
         Category c = validateCategory(category);

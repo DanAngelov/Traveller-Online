@@ -71,7 +71,7 @@ public abstract class MasterService {
                 .filter(user ->
                         Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now()).getDays() >= 10)
                 .collect(Collectors.toList());
-        userRepository.deleteAllInBatch(usersNotVerified);
+        userRepository.deleteAll(usersNotVerified);
     }
 
     @SneakyThrows
@@ -95,7 +95,7 @@ public abstract class MasterService {
     public void completeDeleteOfUsers() {
         // HERE - statistics report (if needed)
         List<User> usersSoftlyDeleted = userRepository.findAllByEmail(" ");
-        userRepository.deleteAllInBatch(usersSoftlyDeleted);
+        userRepository.deleteAll(usersSoftlyDeleted);
     }
 
 }

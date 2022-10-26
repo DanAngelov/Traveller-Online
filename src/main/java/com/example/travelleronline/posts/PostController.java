@@ -9,7 +9,6 @@ import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -18,8 +17,6 @@ public class PostController extends MasterController {
 
     @Autowired
     private PostService postService;
-    @Autowired
-    private UserController userController;
 
     @PostMapping(value = "/posts")
     public PostCreationDTO createPost(@RequestBody PostCreationDTO dto){

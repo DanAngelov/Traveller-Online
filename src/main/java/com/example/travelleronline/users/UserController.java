@@ -54,8 +54,9 @@ public class UserController extends MasterController {
     }
 
     @GetMapping(value = "/users/search")
-    public List<UserProfileDTO> getAllByName(@RequestParam String name) {
-        return userService.getAllByName(name);
+    public List<UserIdNamesPhotoDTO> getAllByName(@RequestParam("name") String name,
+    @RequestParam("pageNumber") int pageNumber, @RequestParam("rowsNumber") int rowsNumber) {
+        return userService.getAllByName(name, pageNumber, rowsNumber);
     }
 
     // unsubscribes after following visit
@@ -104,5 +105,10 @@ public class UserController extends MasterController {
         }
         return (int) session.getAttribute(USER_ID);
     }
+
+//    @GetMapping("/test")
+//    public List<UserProfileDTO> test(@RequestParam String firstName) {
+//        return userService.test(firstName);
+//    } // TODO remove (for testing)
 
 }

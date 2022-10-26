@@ -8,12 +8,14 @@ import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -110,13 +112,15 @@ public class UserService extends MasterService {
         return modelMapper.map(user, UserProfileDTO.class);
     }
 
-    List<UserProfileDTO> getAllByName(String name) {
+    List<UserIdNamesPhotoDTO> getAllByName(String name, int pageNumber, int rowsNumber) {
         name = name.toLowerCase().trim();
+        Pageable page = PageRequest.of(pageNumber, rowsNumber);
         if (!name.contains("_")) {
-            List<UserProfileDTO> userProfiles =
-                    userRepository.findAllByFirstNameLikeOrLastNameLike(name, name).stream()
+            List<UserIdNamesPhotoDTO> userProfiles =
+                    userRepository.findAllByFirstNameLikeOrLastNameLike(name, name, page)
+                        .stream()
                         .filter(user -> user.isVerified())
-                        .map(user -> modelMapper.map(user, UserProfileDTO.class))
+                        .map(user -> modelMapper.map(user, UserIdNamesPhotoDTO.class))
                         .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
@@ -128,19 +132,12 @@ public class UserService extends MasterService {
             if (names.length > 2) {
                 throw new BadRequestException("Too many spaces in the text.");
             }
-            List<User> users = userRepository.findAllByFirstNameLike(names[0]).stream()
-                    .filter(user -> user.isVerified())
-                    .filter(user -> user.getLastName().equalsIgnoreCase(names[1]))
-                    .collect(Collectors.toList());
-            users.addAll(
-                    userRepository.findAllByLastNameLike(names[1]).stream()
+            List<UserIdNamesPhotoDTO> userProfiles =
+                    userRepository.findAllByFirstNameLikeAndLastNameLike(names[0], names[1], page)
+                            .stream()
                             .filter(user -> user.isVerified())
-                            .filter(user -> user.getLastName().equalsIgnoreCase(names[0]))
-                            .collect(Collectors.toList())
-            );
-            List<UserProfileDTO> userProfiles = users.stream()
-                    .map(user -> modelMapper.map(user, UserProfileDTO.class))
-                    .collect(Collectors.toList());
+                            .map(user -> modelMapper.map(user, UserIdNamesPhotoDTO.class))
+                            .collect(Collectors.toList());
             if (userProfiles.size() == 0) {
                 throw new NotFoundException("No such users.");
             }
@@ -287,4 +284,9 @@ public class UserService extends MasterService {
         }
     }
 
+//    public List<UserProfileDTO> test(String firstName) {
+//        return userRepository.findAllByFirstNameLike(firstName).stream()
+//                .map(user -> modelMapper.map(user, UserProfileDTO.class))
+//                .collect(Collectors.toList());
+//    } // TODO remove (for testing)
 }
