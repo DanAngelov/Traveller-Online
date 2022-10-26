@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public class PostCreationDTO {
 
     private int postId;
-    private int ownerId;
     private String title;
     private String description;
     private String category;

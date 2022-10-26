@@ -6,6 +6,7 @@ import com.example.travelleronline.comments.dtos.CommentResponseDTO;
 import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toComment.CommentReaction;
@@ -20,12 +21,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class CommentService extends MasterService {
-    public CommentResponseDTO createComment(int pid, CommentDTO dto) {
-        //TODO validate if user is logged in and take user id from session.
+    public CommentResponseDTO createComment(int pid, CommentRequestDTO dto, int uid) {
         validatePostId(pid);
         validateComment(dto);
         Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("No such post."));
-        User u = userRepository.findById(1).orElseThrow(() -> new NotFoundException("No such user."));//TODO get user from session
+        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("No such user."));
         Comment c = new Comment();
         c.setCreatedAt(LocalDateTime.now());
         c.setContent(dto.getContent());
@@ -35,7 +35,8 @@ public class CommentService extends MasterService {
         return modelMapper.map(c, CommentResponseDTO.class);
     }
 
-    public void editComment(int pid, int cid, CommentDTO dto) {
+    public void editComment(int pid, int cid, CommentRequestDTO dto,int uid) {
+        validateOwnerOfComment(uid, cid);
         validatePostId(pid);
         validateComment(dto);
         Comment existingComment = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
@@ -43,22 +44,52 @@ public class CommentService extends MasterService {
         commentRepository.save(existingComment);
     }
 
-    public void deleteComment(int pid, int cid) {
+    private void validateOwnerOfComment(int uid, int cid) {
+        Comment c = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
+        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        if(!c.getUser().equals(u)) {
+            throw new UnauthorizedException("Only the owner of the comment can edit the comment.");
+        }
+    }
+
+    public void deleteComment(int pid, int cid, int uid) {
         validatePostId(pid);
         validateCommentId(cid);
+        validateDeletionOfComment(pid, cid, uid);
         commentRepository.deleteById(cid);
     }
 
-    public void deleteAllComments(int pid) {
+    private void validateDeletionOfComment(int pid, int cid, int uid) {
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post no found."));
+        Comment c = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
+        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        User postOwner = p.getOwner();
+        User commentOwner = c.getUser();
+        if (!sessionUser.equals(commentOwner) || !sessionUser.equals(postOwner)) {
+            throw new UnauthorizedException("You must be post owner or comment owner to delete this comment.");
+        }
+    }
+
+    public void deleteAllComments(int pid, int uid) {
         validatePostId(pid);
+        validateDeletion(pid, uid);
         commentRepository.deleteAll();
+    }
+
+    private void validateDeletion(int pid, int uid) {
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post no found."));
+        User postOwner = p.getOwner();
+        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        if(!sessionUser.equals(postOwner)) {
+            throw new UnauthorizedException("You must be post owner to delete all comments.");
+        }
     }
 
     private void validatePostId(int pid) {
         postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
     }
 
-    private void validateComment(CommentDTO dto) {
+    private void validateComment(CommentRequestDTO dto) {
         if (dto.getContent().length() < 5 || dto.getContent().length() > 500) {
             throw new BadRequestException("Comment size must be between 5 and 500 letters.");
         }

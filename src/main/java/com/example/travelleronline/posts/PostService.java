@@ -3,6 +3,7 @@ package com.example.travelleronline.posts;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toPost.PostReaction;
@@ -28,24 +29,20 @@ public class PostService extends MasterService {
     @Autowired
     UserService userService;
 
-    public PostCreationDTO createPost(PostCreationDTO dto) {
+    public PostCreationDTO createPost(PostCreationDTO dto, int uid) {
         Category c = validatePost(dto);
-        LocalDateTime time = LocalDateTime.now();
-        dto.setDateOfUpload(time);
+        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
         Post p = new Post();
-        User u = userRepository.findById(1).orElseThrow(() -> new NotFoundException("User not found"));//TODO setting 1 for testing purpose
         p.setOwner(u);
-        p.setDateOfUpload(time);
+        p.setDateOfUpload(LocalDateTime.now());
         p.setTitle(dto.getTitle());
         p.setDescription(dto.getDescription());
         p.setLocationLatitude(dto.getLocationLatitude());
         p.setLocationLongitude(dto.getLocationLongitude());
         p.setCategory(c);
-        dto.setOwnerId(1);
         postRepository.save(p);
+        dto.setDateOfUpload(p.getDateOfUpload());
         dto.setPostId(p.getPostId());
-        c.getPosts().add(p);//TODO check
-        categoryRepository.save(c);
         return dto;
     }
 
@@ -54,18 +51,24 @@ public class PostService extends MasterService {
         return u.getPosts().stream().map(p -> modelMapper.map(p, PostWithoutOwnerDTO.class)).collect(Collectors.toList());
     }
 
-    public void deletePostById(int id) { //TODO check who is deleting(owner/admin/otherUser)
-        postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
-        postRepository.deleteById(id);
+    public void deletePostById(int pid, int uid) {
+        validateDeletionOfPost(pid, uid);
+        postRepository.deleteById(pid);
     }
 
-    public void deleteAllPosts() {
-        postRepository.deleteAll();
+    private void validateDeletionOfPost(int pid, int uid) {
+        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+        User postOwner = p.getOwner();
+        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        if (!sessionUser.equals(postOwner)) {
+            throw new UnauthorizedException("You must be post owner to delete this post.");
+        }
     }
 
-    public void editPost(int id, PostCreationDTO dto) { //TODO check who is editing(owner/admin/otherUser)
+    public void editPost(int pid, PostCreationDTO dto, int uid) {
+        validatePostOwner(pid, uid);
         Category c = validatePost(dto);
-        Post existingPost = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found."));
+        Post existingPost = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
         existingPost.setTitle(dto.getTitle());
         existingPost.setDescription(dto.getDescription());
         existingPost.setCategory(c);
@@ -130,7 +133,8 @@ public class PostService extends MasterService {
         return posts.stream().map(p -> modelMapper.map(p,PostWithoutOwnerDTO.class)).collect(Collectors.toList());
     }  // TODO should be refactored -> one endpoint (Dan)
 
-    public void addHashtagToPost(int pid, String hashtag) {
+    public void addHashtagToPost(int pid, String hashtag, int uid) {
+        validatePostOwner(pid, uid);
         Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
         for (Hashtag g : p.getPostHashtags()) {
             if(g.getName().equals(hashtag)) {
@@ -142,6 +146,14 @@ public class PostService extends MasterService {
         hashtagRepository.save(tag);
         p.getPostHashtags().add(tag);
         postRepository.save(p);
+    }
+
+    private void validatePostOwner(int pid, int uid) {
+        Post post = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
+        if(!sessionUser.equals(post.getOwner())) {
+            throw new UnauthorizedException("You must be post owner to add hashtags to the post.");
+        }
     }
 
     private Hashtag validateHashtag(String hashtag) {

@@ -6,6 +6,7 @@ import com.example.travelleronline.exceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @RestController
@@ -46,6 +47,13 @@ public abstract class MasterController {
         dto.setTime(LocalDateTime.now());
         e.printStackTrace(); //TODO add to log file
         return dto;
+    }
+
+    protected int getUserId(HttpSession session) {
+        if (session.getAttribute(USER_ID) == null) {
+            return 0;
+        }
+        return (int) session.getAttribute(USER_ID);
     }
 
 }

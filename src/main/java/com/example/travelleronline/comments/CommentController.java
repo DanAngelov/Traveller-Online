@@ -27,42 +27,43 @@ public class CommentController extends MasterController {
     }
 
     @PostMapping(value = "/posts/{pid}/comments/{cid}")
-    public CommentResponseDTO respondToComment(@PathVariable int pid, @PathVariable int cid,@RequestBody CommentRequestDTO dto){
-        int uid = 4;//TODO fix hard coding
+    public CommentResponseDTO respondToComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentRequestDTO dto,HttpSession session){
+        int uid = getUserId(session);
         return commentService.respondToComment(pid, cid, uid, dto);
     }
 
     @PostMapping("/posts/{pid}/comments")
-    public CommentResponseDTO createComment(@PathVariable int pid, @RequestBody CommentDTO dto){
-        return commentService.createComment(pid,dto);
+    public CommentResponseDTO createComment(@PathVariable int pid, @RequestBody CommentRequestDTO dto, HttpSession session){
+        int uid = getUserId(session);
+        return commentService.createComment(pid, dto, uid);
     }
 
     @PutMapping("/posts/{pid}/comments/{cid}")
-    public void editComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentDTO dto){
-        commentService.editComment(pid,cid,dto);
+    public void editComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentRequestDTO dto, HttpSession session){
+        int uid = getUserId(session);
+        commentService.editComment(pid,cid, dto, uid);
     }
 
     @DeleteMapping("/posts/{pid}/comments/{cid}")
-    public void deleteComment(@PathVariable int pid, @PathVariable int cid){
-        commentService.deleteComment(pid,cid);
+    public void deleteComment(@PathVariable int pid, @PathVariable int cid, HttpSession session){
+        int uid = getUserId(session);
+        commentService.deleteComment(pid, cid, uid);
     }
 
     @DeleteMapping("/posts/{pid}/comments")
-    public void deleteAllComments(@PathVariable int pid){
-        commentService.deleteAllComments(pid);
+    public void deleteAllComments(@PathVariable int pid, HttpSession session){
+        int uid = getUserId(session);
+        commentService.deleteAllComments(pid, uid);
     }
 
     @PutMapping("/comments/{cid}/react")
-    public LikesDislikesDTO reactTo(@PathVariable int cid,
-                                        @RequestParam("reaction") String reaction,
-                                        HttpSession session) {
-        int uid = (int) session.getAttribute(USER_ID);
+    public LikesDislikesDTO reactTo(@PathVariable int cid, @RequestParam("reaction") String reaction, HttpSession session) {
+        int uid = getUserId(session);
         return commentService.reactTo(uid, cid, reaction);
     }
 
     @GetMapping("/comments/{cid}/users")
-    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int cid,
-                                                        @RequestParam("reaction") String reaction) {
+    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int cid, @RequestParam("reaction") String reaction) {
         return commentService.getUsersWhoReacted(cid, reaction);
     }
 

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 @RestController
@@ -14,9 +13,6 @@ public class FileController extends MasterController {
 
     @Autowired
     private FileService fileService;
-
-    @Autowired
-    private UserController userController;
 
     @PostMapping("/posts/{pid}/image")
     public void uploadImage(@PathVariable int pid, @RequestParam MultipartFile file){
@@ -31,7 +27,7 @@ public class FileController extends MasterController {
     @PostMapping("/users/change-image")
     public void changeProfileImage(@RequestParam(value = "image") MultipartFile image,
                                    HttpSession session) {
-        fileService.changeProfileImage(userController.getUserId(session), image);
+        fileService.changeProfileImage(getUserId(session), image);
     }
 
 }
