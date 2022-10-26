@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,10 +24,6 @@ public class TravellerOnlineApplication {
 
     @Bean
     public ModelMapper modelMapper() {
-//        ModelMapper m = new ModelMapper();
-//        modelMapper.getConfiguration()
-//                .setFieldMatchingEnabled(true)
-//                .setFieldAccessLevel(AccessLevel.PRIVATE);
         return new ModelMapper();
     }
 
@@ -35,7 +33,7 @@ public class TravellerOnlineApplication {
     }
 
     @Bean
-    public JavaMailSender getJavaMailSender() {
+    public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
@@ -51,6 +49,17 @@ public class TravellerOnlineApplication {
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 
         return mailSender;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/traveller_online");
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+
+        return new JdbcTemplate(dataSource);
     }
 
 }

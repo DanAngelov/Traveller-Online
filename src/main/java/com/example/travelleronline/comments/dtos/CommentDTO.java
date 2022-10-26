@@ -1,6 +1,6 @@
 package com.example.travelleronline.comments.dtos;
 
-import com.example.travelleronline.users.dtos.UserCommentDTO;
+import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,6 +10,6 @@ public class CommentDTO {
 
     private LocalDateTime createdAt;
     private String content;
-    private UserCommentDTO user;
+    private UserIdNamesPhotoDTO user;
 
 }

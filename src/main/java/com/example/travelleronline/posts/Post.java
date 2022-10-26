@@ -4,7 +4,7 @@ import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.comments.Comment;
-import com.example.travelleronline.reactions.PostReaction;
+import com.example.travelleronline.reactions.toPost.PostReaction;
 import com.example.travelleronline.users.User;
 import lombok.*;
 

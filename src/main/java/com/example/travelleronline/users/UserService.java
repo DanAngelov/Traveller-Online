@@ -3,24 +3,24 @@ package com.example.travelleronline.users;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.YEARS;
 
 @Service
@@ -101,6 +101,7 @@ public class UserService extends MasterService {
         if (!user.isVerified()) {
             throw new UnauthorizedException("You have to verify your email first.");
         }
+        user.setLastLoginAt(LocalDateTime.now());
         return modelMapper.map(user, UserProfileDTO.class);
     }
 
@@ -148,6 +149,9 @@ public class UserService extends MasterService {
     }
 
     int subscribe(int sid, int uid) {
+        if (sid == uid) {
+            throw new BadRequestException("User cannot subscribe to himself.");
+        }
         User subscriber = getVerifiedUserById(sid);
         User user = getVerifiedUserById(uid);
         if(user.getSubscribers().contains(subscriber)) {
@@ -205,8 +209,18 @@ public class UserService extends MasterService {
         userRepository.save(user);
     }
 
+    @SneakyThrows
     void deleteById(int uid) {
-        userRepository.deleteById(uid);
+        User user = getVerifiedUserById(uid);
+        user.setFirstName(" ");
+        user.setLastName(" ");
+        user.setEmail(" ");
+        user.setPhone(" ");
+        user.setDateOfBirth(LocalDate.now());
+        user.setGender('n');
+        Files.delete(Path.of(user.getUserPhotoUri()));
+        user.setUserPhotoUri(" ");
+        user.setVerified(false);
     }
 
     private void sendVerificationEmail(String email, int uid) {
@@ -219,15 +233,6 @@ public class UserService extends MasterService {
                 "http://localhost:7000/app/verify-email/" + token);
         //http://traveller-online.bg/app/verify-email/...
         emailSender.send(message);
-    }
-
-    public User getVerifiedUserById(int uid) {
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new NotFoundException("User not found."));
-        if (!user.isVerified()) {
-            throw new BadRequestException("The user is not verified.");
-        }
-        return user;
     }
 
     // user's info and password validations
@@ -280,17 +285,6 @@ public class UserService extends MasterService {
         if (gender != 'm' && gender != 'f' && gender != 'o') {
             throw new BadRequestException("The gender is not valid.");
         }
-    }
-
-    // Cron Job
-
-    @Scheduled(fixedRate = 10*24*60*60*1000) // for every 10 days
-    public void deleteUsersNotVerified() {
-        List<User> usersNotVerified = userRepository.findAllByIsVerified(false).stream()
-            .filter(user ->
-                Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now()).getDays() >= 10)
-            .collect(Collectors.toList());
-        userRepository.deleteAllInBatch(usersNotVerified);
     }
 
 }

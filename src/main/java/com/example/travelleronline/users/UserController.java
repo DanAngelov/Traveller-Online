@@ -1,6 +1,5 @@
 package com.example.travelleronline.users;
 
-import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterController;
 import com.example.travelleronline.exceptions.BadRequestException;
@@ -32,9 +31,9 @@ public class UserController extends MasterController {
         userService.verifyEmail(token);
     }
 
-    @PostMapping("users/login")
+    @PostMapping("/users/login")
     public UserProfileDTO logIn(@RequestBody LoginDTO dto, HttpServletRequest req) {
-        HttpSession session = req.getSession();;
+        HttpSession session = req.getSession();
         if (session.getAttribute(LOGGED) != null && (boolean) session.getAttribute(LOGGED)) {
             session.invalidate();
             throw new BadRequestException("The user was already logged in. Session terminated.");
@@ -44,60 +43,51 @@ public class UserController extends MasterController {
         return result;
     }
 
-    @PutMapping("users/logout")
+    @PutMapping("/users/logout")
     public void logOut(HttpSession session) {
         session.invalidate();
     }
 
     @GetMapping("/users/{uid}")
-    public UserProfileDTO getById(@PathVariable int uid, HttpServletRequest req) {
-        validateLoggedIn(req);
+    public UserProfileDTO getById(@PathVariable int uid) {
         return userService.getById(uid);
     }
 
     @GetMapping(value = "/users/search")
-    public List<UserProfileDTO> getAllByName(@RequestParam String name, HttpServletRequest req) {
-        validateLoggedIn(req);
+    public List<UserProfileDTO> getAllByName(@RequestParam String name) {
         return userService.getAllByName(name);
     }
 
     // unsubscribes after following visit
     @PutMapping("/users/{uid}/subscribe")
-    public int subscribe(@PathVariable int uid, HttpServletRequest req) {
-        validateLoggedIn(req);
-        int sid = getUserId(req); // subscriber's id
+    public int subscribe(@PathVariable int uid, HttpSession session) {
+        int sid = getUserId(session); // subscriber's id
         return userService.subscribe(sid, uid);
     }
 
     @GetMapping("/users/my-subscribers")
-    public List<UserProfileDTO> showSubscribers(HttpServletRequest req) {
-        validateLoggedIn(req);
-        return userService.showSubscribers(getUserId(req));
+    public List<UserProfileDTO> showSubscribers(HttpSession session) {
+        return userService.showSubscribers(getUserId(session));
     }
 
     @GetMapping("/users/my-subscriptions")
-    public List<UserProfileDTO> showSubscriptions(HttpServletRequest req) {
-        validateLoggedIn(req);
-        return userService.showSubscriptions(getUserId(req));
+    public List<UserProfileDTO> showSubscriptions(HttpSession session) {
+        return userService.showSubscriptions(getUserId(session));
     }
 
-
     @PutMapping("/users/edit-info")
-    public void editUserInfo(@RequestBody EditInfoDTO dto, HttpServletRequest req) {
-        validateLoggedIn(req);
-        userService.editUserInfo(dto, getUserId(req));
+    public void editUserInfo(@RequestBody EditInfoDTO dto, HttpSession session) {
+        userService.editUserInfo(dto, getUserId(session));
     }
 
     @PutMapping("/users/edit-password")
-    public void editUserPass(@RequestBody EditPassDTO dto, HttpServletRequest req) {
-        validateLoggedIn(req);
-        userService.editUserPass(dto, getUserId(req));
+    public void editUserPass(@RequestBody EditPassDTO dto, HttpSession session) {
+        userService.editUserPass(dto, getUserId(session));
     }
 
     @DeleteMapping("/users")
-    public void deleteById(HttpServletRequest req) {
-        validateLoggedIn(req);
-        userService.deleteById(getUserId(req));
+    public void deleteById(HttpSession session) {
+        userService.deleteById(getUserId(session));
     }
 
     private void logUser(HttpServletRequest req, int uid) {
@@ -108,22 +98,11 @@ public class UserController extends MasterController {
         session.setAttribute(REMOTE_ADDRESS, ip);
     }
 
-    public void validateLoggedIn(HttpServletRequest req) {
-        HttpSession session = req.getSession();
-        String ip = req.getRemoteAddr();
-        if (session.getAttribute(LOGGED) == null ||
-                !(boolean) session.getAttribute(LOGGED) ||
-                session.getAttribute(REMOTE_ADDRESS) == null ||
-                !session.getAttribute(REMOTE_ADDRESS).equals(ip)) {
-            throw new UnauthorizedException("You should log in first.");
-        }
-    }
-
-    public int getUserId(HttpServletRequest req) {
-        if (req.getSession().getAttribute(USER_ID) == null) {
+    public int getUserId(HttpSession session) {
+        if (session.getAttribute(USER_ID) == null) {
             return 0;
         }
-        return (int) req.getSession().getAttribute(USER_ID);
+        return (int) session.getAttribute(USER_ID);
     }
 
 }

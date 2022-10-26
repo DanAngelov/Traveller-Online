@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @RestController
 public class FileController extends MasterController {
@@ -28,9 +29,9 @@ public class FileController extends MasterController {
     }
 
     @PostMapping("/users/change-image")
-    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image, HttpServletRequest req) {
-        userController.validateLoggedIn(req);
-        fileService.changeProfileImage(userController.getUserId(req), image);
+    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image,
+                                   HttpSession session) {
+        fileService.changeProfileImage(userController.getUserId(session), image);
     }
 
 }

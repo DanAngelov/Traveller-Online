@@ -2,8 +2,8 @@ package com.example.travelleronline.users;
 
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.reactions.CommentReaction;
-import com.example.travelleronline.reactions.PostReaction;
+import com.example.travelleronline.reactions.toComment.CommentReaction;
+import com.example.travelleronline.reactions.toPost.PostReaction;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -37,6 +37,8 @@ public class User {
     private String userPhotoUri;
     @Column
     private LocalDateTime createdAt;
+    @Column
+    private LocalDateTime lastLoginAt;
     @Column
     private boolean isVerified;
 

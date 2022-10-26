@@ -1,4 +1,4 @@
-package com.example.travelleronline.reactions;
+package com.example.travelleronline.reactions.toComment;
 
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.users.User;
@@ -12,7 +12,7 @@ import javax.persistence.*;
 public class CommentReaction {
 
     @EmbeddedId
-    CommentReactionsKey id;
+    CommentReactionsKey id = new CommentReactionsKey();
 
     @ManyToOne
     @MapsId("userId")
