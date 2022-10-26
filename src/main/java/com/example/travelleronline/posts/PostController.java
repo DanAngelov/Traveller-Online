@@ -1,9 +1,9 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
-import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -24,22 +24,22 @@ public class PostController extends MasterController {
     }
 
     @GetMapping(value = "/posts/{uid}")
-    public List<PostWithoutOwnerDTO> getAllPostsOfUser(@PathVariable int uid){
+    public List<PostDTO> getAllPostsOfUser(@PathVariable int uid){
         return postService.getPostsOfUser(uid);
     }
 
     @GetMapping(value = "/posts/titles/{title}")
-    public List<PostWithoutOwnerDTO> getPostsByTitle(@PathVariable String title){
+    public List<PostDTO> getPostsByTitle(@PathVariable String title){
         return postService.getPostsByTitle(title);
     } // TODO should be refactored -> one endpoint (Dan)
 
     @GetMapping(value = "/posts/hashtags/{hashtag}")
-    public List<PostWithoutOwnerDTO> getPostsByHashtag(@PathVariable String hashtag){
+    public List<PostDTO> getPostsByHashtag(@PathVariable String hashtag){
         return postService.getPostsByHashtag(hashtag);
     } // TODO should be refactored -> one endpoint (Dan)
 
     @GetMapping(value = "/posts/categories/{category}")
-    public List<PostWithoutOwnerDTO> getPostsByCategory(@PathVariable String category){
+    public List<PostDTO> getPostsByCategory(@PathVariable String category){
         return postService.getPostsByCategory(category);
     }
 

@@ -1,6 +1,6 @@
 package com.example.travelleronline.users.dtos;
 
-import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
+import com.example.travelleronline.posts.dtos.PostDTO;
 import lombok.Data;
 
 import java.util.List;
@@ -13,6 +13,6 @@ public class UserWithoutPostDTO {
     private String lastName;
     private String userPhotoUri;
     private boolean isVerified;
-    private List<PostWithoutOwnerDTO> posts;
+    private List<PostDTO> posts;
 
 }

@@ -1,9 +1,7 @@
 package com.example.travelleronline.comments;
 
 import com.example.travelleronline.reactions.LikesDislikesDTO;
-import com.example.travelleronline.users.UserController;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
-import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.comments.dtos.CommentRequestDTO;
 import com.example.travelleronline.comments.dtos.CommentResponseDTO;
 import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;

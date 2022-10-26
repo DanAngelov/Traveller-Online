@@ -1,6 +1,5 @@
 package com.example.travelleronline.media;
 
-import com.example.travelleronline.users.UserController;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,18 +14,19 @@ public class FileController extends MasterController {
     private FileService fileService;
 
     @PostMapping("/posts/{pid}/image")
-    public void uploadImage(@PathVariable int pid, @RequestParam MultipartFile file){
-        fileService.uploadImage(pid,file);
+    public void uploadImage(@PathVariable int pid, @RequestParam MultipartFile image, HttpSession session){
+        int uid = getUserId(session);
+        fileService.uploadImage(pid, image, uid);
     }
 
     @PostMapping("/posts/{pid}/video")
-    public void uploadVideo(@PathVariable int pid,@RequestParam MultipartFile file){
-        fileService.uploadVideo(pid,file);
+    public void uploadVideo(@PathVariable int pid,@RequestParam MultipartFile video, HttpSession session){
+        int uid = getUserId(session);
+        fileService.uploadVideo(pid, video, uid);
     }
 
     @PostMapping("/users/change-image")
-    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image,
-                                   HttpSession session) {
+    public void changeProfileImage(@RequestParam(value = "image") MultipartFile image, HttpSession session) {
         fileService.changeProfileImage(getUserId(session), image);
     }
 

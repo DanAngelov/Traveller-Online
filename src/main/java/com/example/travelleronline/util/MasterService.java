@@ -1,11 +1,14 @@
 package com.example.travelleronline.util;
 
+import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.categories.CategoryRepository;
+import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.comments.CommentRepository;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.hashtags.HashtagRepository;
 import com.example.travelleronline.media.PostImageRepository;
+import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.posts.PostRepository;
 import com.example.travelleronline.reactions.toComment.CommentReactionRepository;
 import com.example.travelleronline.reactions.toPost.PostReactionRepository;
@@ -57,10 +60,20 @@ public abstract class MasterService {
         return user;
     }
 
-//    protected Post getPostById(int pid) {
-//        return postRepository.findById(pid)
-//                .orElseThrow(() -> new NotFoundException("Post not found."));
-//    } // TODO use everywhere
+    protected Post getPostById(int pid) {
+        return postRepository.findById(pid)
+                .orElseThrow(() -> new NotFoundException("Post not found."));
+    }
+
+    protected Category getCategoryById(int cid) {
+        return categoryRepository.findById(cid)
+                .orElseThrow(() -> new NotFoundException("Category not found."));
+    }
+
+    protected Comment getCommentById(int cid) {
+        return commentRepository.findById(cid)
+                .orElseThrow(() -> new NotFoundException("Comment not found."));
+    }
 
     // Cron Job
 

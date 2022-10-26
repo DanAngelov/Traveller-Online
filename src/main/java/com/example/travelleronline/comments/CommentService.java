@@ -1,6 +1,5 @@
 package com.example.travelleronline.comments;
 
-import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.comments.dtos.CommentRequestDTO;
 import com.example.travelleronline.comments.dtos.CommentResponseDTO;
 import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
@@ -21,11 +20,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class CommentService extends MasterService {
+
     public CommentResponseDTO createComment(int pid, CommentRequestDTO dto, int uid) {
         validatePostId(pid);
         validateComment(dto);
-        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("No such post."));
-        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("No such user."));
+        Post p = getPostById(pid);
+        User u = getVerifiedUserById(uid);
         Comment c = new Comment();
         c.setCreatedAt(LocalDateTime.now());
         c.setContent(dto.getContent());
@@ -39,14 +39,14 @@ public class CommentService extends MasterService {
         validateOwnerOfComment(uid, cid);
         validatePostId(pid);
         validateComment(dto);
-        Comment existingComment = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
+        Comment existingComment = getCommentById(cid);
         existingComment.setContent(dto.getContent());
         commentRepository.save(existingComment);
     }
 
     private void validateOwnerOfComment(int uid, int cid) {
-        Comment c = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
-        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        Comment c = getCommentById(cid);
+        User u = getVerifiedUserById(uid);
         if(!c.getUser().equals(u)) {
             throw new UnauthorizedException("Only the owner of the comment can edit the comment.");
         }
@@ -55,19 +55,24 @@ public class CommentService extends MasterService {
     public void deleteComment(int pid, int cid, int uid) {
         validatePostId(pid);
         validateCommentId(cid);
-        validateDeletionOfComment(pid, cid, uid);
-        commentRepository.deleteById(cid);
+        if(validateDeletionOfComment(pid, cid, uid)) {
+            commentRepository.deleteById(cid);
+        }
+        else {
+            throw new BadRequestException("You must be post owner or comment owner to delete this comment.");
+        }
     }
 
-    private void validateDeletionOfComment(int pid, int cid, int uid) {
-        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post no found."));
-        Comment c = commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
-        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+    private boolean validateDeletionOfComment(int pid, int cid, int uid) {
+        Post p = getPostById(pid);
+        Comment c = getCommentById(cid);
+        User sessionUser = getVerifiedUserById(uid);
         User postOwner = p.getOwner();
         User commentOwner = c.getUser();
-        if (!sessionUser.equals(commentOwner) || !sessionUser.equals(postOwner)) {
-            throw new UnauthorizedException("You must be post owner or comment owner to delete this comment.");
+        if (sessionUser.equals(commentOwner) || sessionUser.equals(postOwner)) {
+            return true;
         }
+        return false;
     }
 
     public void deleteAllComments(int pid, int uid) {
@@ -77,11 +82,11 @@ public class CommentService extends MasterService {
     }
 
     private void validateDeletion(int pid, int uid) {
-        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post no found."));
+        Post p = getPostById(pid);
         User postOwner = p.getOwner();
-        User sessionUser = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found."));
+        User sessionUser = getVerifiedUserById(uid);
         if(!sessionUser.equals(postOwner)) {
-            throw new UnauthorizedException("You must be post owner to delete all comments.");
+            throw new UnauthorizedException("You must be the post owner to delete all comments.");
         }
     }
 
@@ -100,15 +105,15 @@ public class CommentService extends MasterService {
     }
 
     public List<CommentWithoutPostDTO> getPostComments(int pid) {
-        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
+        Post p = getPostById(pid);
         List<Comment> postComments = p.getComments();
         return postComments.stream().map(c -> modelMapper.map(c, CommentWithoutPostDTO.class)).collect(Collectors.toList());
     }
 
     public CommentResponseDTO respondToComment(int pid, int cid, int uid, CommentRequestDTO dto) {
-        Post p = postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
-        User u = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
-        Comment c = commentRepository.getCommentByPostAndAndCommentId(p,cid);
+        Post p = getPostById(pid);
+        User u = getVerifiedUserById(uid);
+        Comment c = getCommentById(cid);
         Comment response = new Comment();
         response.setPost(p);
         response.setCreatedAt(LocalDateTime.now());
@@ -121,8 +126,7 @@ public class CommentService extends MasterService {
 
     public LikesDislikesDTO reactTo(int uid, int cid, String reaction) {
         User user = getVerifiedUserById(uid);
-        Comment comment = commentRepository.findById(cid)
-                .orElseThrow(() -> new NotFoundException("Comment not found"));
+        Comment comment = getCommentById(cid);
         CommentReaction commentReaction = new CommentReaction();
         commentReaction.setUser(user);
         commentReaction.setComment(comment);
@@ -160,8 +164,7 @@ public class CommentService extends MasterService {
     }
 
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {
-        Comment comment = commentRepository.findById(cid)
-                .orElseThrow(() -> new NotFoundException("Comment not found."));
+        Comment comment = getCommentById(cid);
         if (reaction.equals("like")) {
             return comment.getCommentReactions().stream()
                     .filter(cr -> cr.isLike())

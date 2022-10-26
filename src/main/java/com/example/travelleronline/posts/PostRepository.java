@@ -15,6 +15,5 @@ public interface PostRepository extends PagingAndSortingRepository<Post,Integer>
     List<Post> findAllByTitle(String title);
     List<Post> findAllByPostHashtags(Hashtag tag);
     List<Post> findAllByCategory(Category category);
-
-    void deleteAllByOwner(User owner);
+    Post getPostByOwnerAndPostId(User owner, int postId);
 }
