@@ -53,7 +53,7 @@ public class UserController extends MasterController {
         return userService.getById(uid);
     }
 
-    @GetMapping(value = "/users/search")
+    @GetMapping(value = "/users/filter")
     public List<UserIdNamesPhotoDTO> getAllByName(@RequestParam("name") String name,
     @RequestParam("pageNumber") int pageNumber, @RequestParam("rowsNumber") int rowsNumber) {
         return userService.getAllByName(name, pageNumber, rowsNumber);
@@ -81,7 +81,7 @@ public class UserController extends MasterController {
         userService.editUserInfo(dto, getUserId(session));
     }
 
-    @PutMapping("/users/edit-password")
+    @PutMapping("/users/change-password")
     public void editUserPass(@RequestBody EditPassDTO dto, HttpSession session) {
         userService.editUserPass(dto, getUserId(session));
     }
@@ -98,12 +98,5 @@ public class UserController extends MasterController {
         session.setAttribute(USER_ID, uid);
         session.setAttribute(REMOTE_ADDRESS, ip);
     }
-
-
-
-//    @GetMapping("/test")
-//    public List<UserProfileDTO> test(@RequestParam String firstName) {
-//        return userService.test(firstName);
-//    } // TODO remove (for testing)
 
 }

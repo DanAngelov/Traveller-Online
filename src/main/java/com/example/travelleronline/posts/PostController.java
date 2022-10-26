@@ -1,5 +1,6 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.posts.dtos.PostFilterDTO;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
@@ -23,20 +24,16 @@ public class PostController extends MasterController {
         return postService.createPost(dto, uid);
     }
 
-    @GetMapping(value = "/posts/{uid}")
+    @GetMapping(value = "/users/{uid}/posts")
     public List<PostWithoutOwnerDTO> getAllPostsOfUser(@PathVariable int uid){
         return postService.getPostsOfUser(uid);
     }
 
-    @GetMapping(value = "/posts/titles/{title}")
-    public List<PostWithoutOwnerDTO> getPostsByTitle(@PathVariable String title){
-        return postService.getPostsByTitle(title);
-    } // TODO should be refactored -> one endpoint (Dan)
-
-    @GetMapping(value = "/posts/hashtags/{hashtag}")
-    public List<PostWithoutOwnerDTO> getPostsByHashtag(@PathVariable String hashtag){
-        return postService.getPostsByHashtag(hashtag);
-    } // TODO should be refactored -> one endpoint (Dan)
+//    @GetMapping(value = "/posts/filter")
+//    public List<PostFilterDTO> filterPosts(@RequestParam String searchBy, @RequestParam String value,
+//    @RequestParam String orderBy, @RequestParam int pageNumber, @RequestParam int rowsNumber){
+//        return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
+//    }
 
     @GetMapping(value = "/posts/categories/{category}")
     public List<PostWithoutOwnerDTO> getPostsByCategory(@PathVariable String category){

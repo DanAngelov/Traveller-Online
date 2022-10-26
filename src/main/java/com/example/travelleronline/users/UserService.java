@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,8 +115,10 @@ public class UserService extends MasterService {
 
     List<UserIdNamesPhotoDTO> getAllByName(String name, int pageNumber, int rowsNumber) {
         name = name.toLowerCase().trim();
-        Pageable page = PageRequest.of(pageNumber, rowsNumber);
+        Pageable page = PageRequest.of(pageNumber, rowsNumber, Sort.by("firstName"));
         if (!name.contains("_")) {
+            StringBuilder builder = new StringBuilder();
+            name = builder.append("%").append(name).append("%").toString();
             List<UserIdNamesPhotoDTO> userProfiles =
                     userRepository.findAllByFirstNameLikeOrLastNameLike(name, name, page)
                         .stream()
@@ -132,6 +135,10 @@ public class UserService extends MasterService {
             if (names.length > 2) {
                 throw new BadRequestException("Too many spaces in the text.");
             }
+            StringBuilder builder = new StringBuilder();
+            names[0] = name = builder.append("%").append(names[0]).append("%").toString();
+            builder.setLength(0);
+            names[1] = name = builder.append("%").append(names[1]).append("%").toString();
             List<UserIdNamesPhotoDTO> userProfiles =
                     userRepository.findAllByFirstNameLikeAndLastNameLike(names[0], names[1], page)
                             .stream()
@@ -269,6 +276,9 @@ public class UserService extends MasterService {
         if (dateOfBirth == null) {
             throw new BadRequestException("The date of birth is blank.");
         }
+        if (dateOfBirth.isAfter(LocalDate.now())) {
+            throw new BadRequestException("The date of birth is after the current date.");
+        }
         long years = YEARS.between(dateOfBirth, LocalDate.now());
         if (years < 18) {
             throw new BadRequestException("Too young.");
@@ -284,9 +294,4 @@ public class UserService extends MasterService {
         }
     }
 
-//    public List<UserProfileDTO> test(String firstName) {
-//        return userRepository.findAllByFirstNameLike(firstName).stream()
-//                .map(user -> modelMapper.map(user, UserProfileDTO.class))
-//                .collect(Collectors.toList());
-//    } // TODO remove (for testing)
 }

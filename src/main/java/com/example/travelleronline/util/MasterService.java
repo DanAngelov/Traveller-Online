@@ -4,6 +4,7 @@ import com.example.travelleronline.categories.CategoryRepository;
 import com.example.travelleronline.comments.CommentRepository;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
+import com.example.travelleronline.hashtags.Hashtag;
 import com.example.travelleronline.hashtags.HashtagRepository;
 import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.PostRepository;
@@ -48,7 +49,7 @@ public abstract class MasterService {
     @Autowired
     protected CommentReactionRepository commentReactRepo;
 
-    public User getVerifiedUserById(int uid) {
+    protected User getVerifiedUserById(int uid) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User not found."));
         if (!user.isVerified()) {

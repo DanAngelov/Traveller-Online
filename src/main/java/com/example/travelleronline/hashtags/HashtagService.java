@@ -18,18 +18,16 @@ public class HashtagService extends MasterService {
         return dto;
     }
 
-    private void validateHashtag(String hashTagName) {
-        if(hashTagName == null || hashTagName.equals("null")) {
+    private void validateHashtag(String hashtagName) {
+        if(hashtagName == null || hashtagName.equals("null")) {
             throw new BadRequestException("Hashtag can not be null.");
         }
-        if(hashTagName.length() < 3 || hashTagName.isBlank() || hashTagName.length() > 20) {
+        if(hashtagName.length() < 3 || hashtagName.isBlank() || hashtagName.length() > 20) {
             throw new BadRequestException("Hashtag name must be between 3 and 20 letters");
         }
-        List<Hashtag> hashtags = hashtagRepository.findAll();
-        for (Hashtag h : hashtags) {
-            if(hashTagName.equals(h.getName())) {
-                throw new BadRequestException("Hashtag name already exists.");
-            }
+        Hashtag hashtag = hashtagRepository.findByName(hashtagName);
+        if (hashtag == null) {
+            throw new BadRequestException("Hashtag name already exists.");
         }
     }
 

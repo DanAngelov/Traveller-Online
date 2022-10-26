@@ -24,7 +24,7 @@ public class FileController extends MasterController {
         fileService.uploadVideo(pid,file);
     }
 
-    @PostMapping("/users/change-image")
+    @PutMapping("/users/change-image")
     public void changeProfileImage(@RequestParam(value = "image") MultipartFile image,
                                    HttpSession session) {
         fileService.changeProfileImage(getUserId(session), image);
