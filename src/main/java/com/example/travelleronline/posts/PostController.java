@@ -1,10 +1,10 @@
 package com.example.travelleronline.posts;
 
 import com.example.travelleronline.posts.dtos.PostFilterDTO;
+import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
-import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ public class PostController extends MasterController {
     }
 
     @GetMapping(value = "/users/{uid}/posts")
-    public List<PostWithoutOwnerDTO> getAllPostsOfUser(@PathVariable int uid){
+    public List<PostDTO> getAllPostsOfUser(@PathVariable int uid){
         return postService.getPostsOfUser(uid);
     }
 
@@ -36,7 +36,7 @@ public class PostController extends MasterController {
 //    }
 
     @GetMapping(value = "/posts/categories/{category}")
-    public List<PostWithoutOwnerDTO> getPostsByCategory(@PathVariable String category){
+    public List<PostDTO> getPostsByCategory(@PathVariable String category){
         return postService.getPostsByCategory(category);
     }
 
@@ -49,12 +49,6 @@ public class PostController extends MasterController {
     @PostMapping(value = "/posts/{pid}/tag/{uid}")
     public void tagUserToPost(@PathVariable int pid, @PathVariable int uid) {
         postService.tagUserToPost(pid,uid);
-    }
-
-    @PostMapping(value = "/posts/{pid}/{hashtag}")
-    public void addHashtagToPost(@PathVariable int pid, @PathVariable String hashtag,HttpSession session){
-        int uid = getUserId(session);
-        postService.addHashtagToPost(pid, hashtag, uid);
     }
 
     @PutMapping("/posts/{pid}")

@@ -4,18 +4,21 @@ import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.media.PostImageDTO;
+import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
+import com.example.travelleronline.users.dtos.UserProfileDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class PostWithoutOwnerDTO {
+public class PostDTO {
 
     private int postId;
     private String title;
     private LocalDateTime dateOfUpload;
+    private UserProfileDTO owner;
     private String clipUri;
     private String description;
     private double locationLatitude;
@@ -25,5 +28,4 @@ public class PostWithoutOwnerDTO {
     private List<PostImageDTO> postImages;
     private List<UserIdNamesPhotoDTO> taggedUsers;
     private List<HashtagDTO> postHashtags;
-//    private List<PostReaction> postReactions;//TODO future me GL HF
 }

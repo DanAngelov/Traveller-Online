@@ -24,14 +24,14 @@ public class CategoryController extends MasterController {
         return categoryService.getAllCategories();
     }
 
-    @PutMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
-    public CategoryDTO editCategory(@RequestBody CategoryDTO dto,@PathVariable int id) {
-        return categoryService.editCategory(dto,id);
+    @PutMapping(value = "/{cid}", headers = "password=4kd2!kd7@SE1")
+    public CategoryDTO editCategory(@RequestBody CategoryDTO dto,@PathVariable int cid) {
+        return categoryService.editCategory(dto, cid);
     }
 
-    @DeleteMapping(value = "/{id}", headers = "password=4kd2!kd7@SE1")
-    public void deleteCategoryById(@PathVariable int id) {
-        categoryService.deleteCategoryById(id);
+    @DeleteMapping(value = "/{cid}", headers = "password=4kd2!kd7@SE1")
+    public void deleteCategoryById(@PathVariable int cid) {
+        categoryService.deleteCategoryById(cid);
     }
 
 
