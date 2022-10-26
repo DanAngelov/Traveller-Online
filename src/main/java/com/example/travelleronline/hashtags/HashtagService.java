@@ -15,7 +15,6 @@ public class HashtagService extends MasterService {
         Hashtag hashtag = new Hashtag();
         hashtag.setName(dto.getName());
         hashtagRepository.save(hashtag);
-        dto.setHashtagId(hashtag.getHashtagId());
         return dto;
     }
 

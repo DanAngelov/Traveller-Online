@@ -48,7 +48,7 @@ public abstract class MasterService {
     @Autowired
     protected CommentReactionRepository commentReactRepo;
 
-    protected User getVerifiedUserById(int uid) {
+    public User getVerifiedUserById(int uid) {
         User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User not found."));
         if (!user.isVerified()) {

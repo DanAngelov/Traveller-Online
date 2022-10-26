@@ -1,7 +1,6 @@
 package com.example.travelleronline.posts;
 
 import com.example.travelleronline.reactions.LikesDislikesDTO;
-import com.example.travelleronline.users.UserController;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
 import com.example.travelleronline.posts.dtos.PostWithoutOwnerDTO;
@@ -19,8 +18,9 @@ public class PostController extends MasterController {
     private PostService postService;
 
     @PostMapping(value = "/posts")
-    public PostCreationDTO createPost(@RequestBody PostCreationDTO dto){
-       return postService.createPost(dto);
+    public PostCreationDTO createPost(@RequestBody PostCreationDTO dto, HttpSession session){
+        int uid = getUserId(session);
+        return postService.createPost(dto, uid);
     }
 
     @GetMapping(value = "/posts/{uid}")
@@ -43,14 +43,10 @@ public class PostController extends MasterController {
         return postService.getPostsByCategory(category);
     }
 
-    @DeleteMapping(value = "/posts/{id}", headers = "password=4kd2!kd7@SE1")
-    public void deletePostById(@PathVariable int id){
-        postService.deletePostById(id);
-    }
-
-    @DeleteMapping(value = "/posts", headers = "password=4kd2!kd7@SE1")
-    public void deleteAllPosts(){
-        postService.deleteAllPosts();
+    @DeleteMapping(value = "/posts/{pid}")
+    public void deletePostById(@PathVariable int pid, HttpSession session){
+        int uid = getUserId(session);
+        postService.deletePostById(pid, uid);
     }
 
     @PostMapping(value = "/posts/{pid}/tag/{uid}")
@@ -59,13 +55,15 @@ public class PostController extends MasterController {
     }
 
     @PostMapping(value = "/posts/{pid}/{hashtag}")
-    public void addHashtagToPost(@PathVariable int pid, @PathVariable String hashtag){
-        postService.addHashtagToPost(pid,hashtag);
+    public void addHashtagToPost(@PathVariable int pid, @PathVariable String hashtag,HttpSession session){
+        int uid = getUserId(session);
+        postService.addHashtagToPost(pid, hashtag, uid);
     }
 
-    @PutMapping("/posts/{id}")
-    public void editPost(@PathVariable int id, @RequestBody PostCreationDTO dto){
-        postService.editPost(id, dto);
+    @PutMapping("/posts/{pid}")
+    public void editPost(@PathVariable int pid, @RequestBody PostCreationDTO dto, HttpSession session){
+        int uid = getUserId(session);
+        postService.editPost(pid, dto, uid);
     }
 
     // News Feed
@@ -86,16 +84,13 @@ public class PostController extends MasterController {
 //    }
 
     @PutMapping("/posts/{pid}/react")
-    public LikesDislikesDTO reactTo(@PathVariable int pid,
-                                    @RequestParam("reaction") String reaction,
-                                        HttpSession session) {
+    public LikesDislikesDTO reactTo(@PathVariable int pid, @RequestParam("reaction") String reaction, HttpSession session) {
         int uid = (int) session.getAttribute(USER_ID);
         return postService.reactTo(uid, pid, reaction);
     }
 
     @GetMapping("/posts/{pid}/users")
-    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid,
-                                                      @RequestParam("reaction") String reaction) {
+    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid, @RequestParam("reaction") String reaction) {
         return postService.getUsersWhoReacted(pid, reaction);
     }
 

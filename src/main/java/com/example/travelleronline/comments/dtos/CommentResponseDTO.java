@@ -6,13 +6,12 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CommentWithoutPostDTO {
+public class CommentResponseDTO {
 
     private int commentId;
     private LocalDateTime createdAt;
     private String content;
     private UserIdNamesPhotoDTO user;
     private CommentDTO parent;
-
 
 }

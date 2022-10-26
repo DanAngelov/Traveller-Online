@@ -21,8 +21,9 @@ public class Comment {
     private LocalDateTime createdAt;
     @Column
     private String content;
-    @Column
-    private int parentId;//TODO this might need to be Comment parentId;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;

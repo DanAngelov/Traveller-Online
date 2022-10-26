@@ -99,12 +99,7 @@ public class UserController extends MasterController {
         session.setAttribute(REMOTE_ADDRESS, ip);
     }
 
-    public int getUserId(HttpSession session) {
-        if (session.getAttribute(USER_ID) == null) {
-            return 0;
-        }
-        return (int) session.getAttribute(USER_ID);
-    }
+
 
 //    @GetMapping("/test")
 //    public List<UserProfileDTO> test(@RequestParam String firstName) {
