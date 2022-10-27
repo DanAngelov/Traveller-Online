@@ -5,12 +5,11 @@ import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.util.MasterService;
 import org.springframework.stereotype.Service;
-
-
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HashtagService extends MasterService {
-
+    @Transactional
     public void addHashtagToPost(int pid, HashtagDTO hashtag, int uid) {
         Post p = validatePostOwner(pid, uid);
         for (Hashtag g : p.getPostHashtags()) {

@@ -31,6 +31,6 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @OneToMany(mappedBy = "comment")
-    List<CommentReaction> commentReactions;
+    private List<CommentReaction> commentReactions;
 
 }

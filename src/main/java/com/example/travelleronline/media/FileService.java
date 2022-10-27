@@ -7,6 +7,7 @@ import com.example.travelleronline.users.User;
 import com.example.travelleronline.util.MasterService;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -17,29 +18,30 @@ import java.util.List;
 @Service
 public class FileService extends MasterService {
 
-        public void uploadImage(int pid, MultipartFile file, int uid) {
+    @Transactional
+    public void uploadImage(int pid, MultipartFile file, int uid) {
         //TODO validate image type (mime)
-            Post post = validatePost(pid, uid);
-            List<PostImage> postImages = post.getPostImages();
-            if(postImages.size() > 2) {
-                throw new BadRequestException("You can have only 3 images per post.");
-            }
-            String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-            String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
-            File f = new File(name);
-            try {
-                Files.copy(file.getInputStream(), f.toPath());
-            }
-            catch (IOException e) {
-                throw new BadRequestException("File already exists.");
-            }
-            PostImage image = new PostImage();
-            image.setImageUri(name);
-            image.setPost(post);
-            postImageRepository.save(image);
-            postImages.add(image);
-            post.setPostImages(postImages);
-            postRepository.save(post);
+        Post post = validatePost(pid, uid);
+        List<PostImage> postImages = post.getPostImages();
+        if(postImages.size() > 2) {
+            throw new BadRequestException("You can have only 3 images per post.");
+        }
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
+        File f = new File(name);
+        try {
+            Files.copy(file.getInputStream(), f.toPath());
+        }
+        catch (IOException e) {
+            throw new BadRequestException("File already exists.");
+        }
+        PostImage image = new PostImage();
+        image.setImageUri(name);
+        image.setPost(post);
+        postImageRepository.save(image);
+        postImages.add(image);
+        post.setPostImages(postImages);
+        postRepository.save(post);
     }
 
     private Post validatePost(int pid, int uid) {

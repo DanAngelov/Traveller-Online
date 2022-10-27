@@ -6,6 +6,7 @@ import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.users.dtos.*;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.TokenCoder;
+import com.example.travelleronline.util.dao.UserDAO;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +36,8 @@ public class UserService extends MasterService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private JavaMailSender emailSender;
+    @Autowired
+    private UserDAO dao;
 
 
     UserWithoutPassDTO register(RegisterDTO dto) {
@@ -234,7 +239,7 @@ public class UserService extends MasterService {
         message.setTo(email);
         message.setSubject("Your Traveller-Online Account - Verify Your Email Address");
         message.setText("Please, follow the link bellow in order to verify your email address:\n" +
-                "http://localhost:7000/app/verify-email/" + token);
+                "http://localhost:7000/users/email-verification/" + token);
         //http://traveller-online.bg/app/verify-email/...
         emailSender.send(message);
     }
@@ -292,6 +297,31 @@ public class UserService extends MasterService {
         if (gender != 'm' && gender != 'f' && gender != 'o') {
             throw new BadRequestException("The gender is not valid.");
         }
+    }
+
+    // Cron Job
+
+    @Scheduled(cron = "0 0 0 */10 * *")
+    public void deleteUsersNotVerified() {
+        List<User> usersNotVerified = userRepository.findAllByIsVerified(false).stream()
+                .filter(user -> !user.getEmail().isBlank()) // to skip softly deleted users
+                .filter(user ->
+                        Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now()).getDays() >= 10)
+                .collect(Collectors.toList());
+        userRepository.deleteAll(usersNotVerified);
+    }
+
+    @SneakyThrows
+    @Scheduled(cron = "0 0 0 */180 * *")
+    public void deleteUsersNotLoggedInSoon() {
+        dao.deleteUsersNotLoggedInSoon();
+    }
+
+    @Scheduled(cron = "0 0 0 1 * *")
+    public void completeDeleteOfUsers() {
+        // HERE - statistics report (if needed)
+        List<User> usersSoftlyDeleted = userRepository.findAllByEmail(" ");
+        userRepository.deleteAll(usersSoftlyDeleted);
     }
 
 }

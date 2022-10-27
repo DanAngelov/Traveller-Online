@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 public class CommentService extends MasterService {
 
     public CommentResponseDTO createComment(int pid, CommentRequestDTO dto, int uid) {
-        validatePostId(pid);
-        validateComment(dto);
+        validatePost(pid);
+        validateCommentContent(dto);
         Post p = getPostById(pid);
         User u = getVerifiedUserById(uid);
         Comment c = new Comment();
@@ -37,8 +37,8 @@ public class CommentService extends MasterService {
 
     public void editComment(int pid, int cid, CommentRequestDTO dto,int uid) {
         validateOwnerOfComment(uid, cid);
-        validatePostId(pid);
-        validateComment(dto);
+        validatePost(pid);
+        validateCommentContent(dto);
         Comment existingComment = getCommentById(cid);
         existingComment.setContent(dto.getContent());
         commentRepository.save(existingComment);
@@ -46,16 +46,15 @@ public class CommentService extends MasterService {
 
     private void validateOwnerOfComment(int uid, int cid) {
         Comment c = getCommentById(cid);
-        User u = getVerifiedUserById(uid);
-        if(!c.getUser().equals(u)) {
+        if(c.getUser().getUserId() != uid) {
             throw new UnauthorizedException("Only the owner of the comment can edit the comment.");
         }
     }
 
     public void deleteComment(int pid, int cid, int uid) {
-        validatePostId(pid);
-        validateCommentId(cid);
-        if(validateDeletionOfComment(pid, cid, uid)) {
+        Post p = getPostById(pid);
+        Comment c = getCommentById(cid);
+        if(validateDeletionOfComment(p, c, uid)) {
             commentRepository.deleteById(cid);
         }
         else {
@@ -63,9 +62,7 @@ public class CommentService extends MasterService {
         }
     }
 
-    private boolean validateDeletionOfComment(int pid, int cid, int uid) {
-        Post p = getPostById(pid);
-        Comment c = getCommentById(cid);
+    private boolean validateDeletionOfComment(Post p, Comment c, int uid) {
         User sessionUser = getVerifiedUserById(uid);
         User postOwner = p.getOwner();
         User commentOwner = c.getUser();
@@ -76,32 +73,23 @@ public class CommentService extends MasterService {
     }
 
     public void deleteAllComments(int pid, int uid) {
-        validatePostId(pid);
-        validateDeletion(pid, uid);
-        commentRepository.deleteAll();
-    }
-
-    private void validateDeletion(int pid, int uid) {
         Post p = getPostById(pid);
         User postOwner = p.getOwner();
         User sessionUser = getVerifiedUserById(uid);
         if(!sessionUser.equals(postOwner)) {
             throw new UnauthorizedException("You must be the post owner to delete all comments.");
         }
+        commentRepository.deleteAll();
     }
 
-    private void validatePostId(int pid) {
+    private void validatePost(int pid) {
         postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
     }
 
-    private void validateComment(CommentRequestDTO dto) {
+    private void validateCommentContent(CommentRequestDTO dto) {
         if (dto.getContent().length() < 5 || dto.getContent().length() > 500) {
             throw new BadRequestException("Comment size must be between 5 and 500 letters.");
         }
-    }
-
-    private void validateCommentId(int cid) {
-        commentRepository.findById(cid).orElseThrow(() -> new NotFoundException("Comment not found."));
     }
 
     public List<CommentWithoutPostDTO> getPostComments(int pid) {
@@ -161,7 +149,7 @@ public class CommentService extends MasterService {
                 .collect(Collectors.toList())
                 .size()); // TODO ? can be refactored or not
         return dto;
-    }
+    } //TODO this method seems too large and maybe should be a transaction ?
 
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {
         Comment comment = getCommentById(cid);
@@ -179,6 +167,6 @@ public class CommentService extends MasterService {
         }
         else {
             throw new BadRequestException("Unknown value for parameter \"reaction\".");
-        }
+        }//TODO use switch instead ?
     }
 }
