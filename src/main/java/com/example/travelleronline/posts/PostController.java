@@ -29,11 +29,12 @@ public class PostController extends MasterController {
         return postService.getPostsOfUser(uid);
     }
 
-//    @GetMapping(value = "/posts/filter")
-//    public List<PostFilterDTO> filterPosts(@RequestParam String searchBy, @RequestParam String value,
-//    @RequestParam String orderBy, @RequestParam int pageNumber, @RequestParam int rowsNumber){
-//        return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
-//    }
+    @GetMapping(value = "/posts/filter")
+    public List<PostFilterDTO> filterPosts(@RequestParam String searchBy,
+    @RequestParam String value, @RequestParam String orderBy,
+    @RequestParam int pageNumber, @RequestParam int rowsNumber){
+        return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
+    }
 
     @GetMapping(value = "/posts/categories/{category}")
     public List<PostDTO> getPostsByCategory(@PathVariable String category){

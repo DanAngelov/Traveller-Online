@@ -3,13 +3,11 @@ package com.example.travelleronline.util;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 
 @RestController
 public abstract class MasterController {
@@ -20,30 +18,30 @@ public abstract class MasterController {
 
     @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    private ErrorDto handleBadRequest(BadRequestException e){
+    private ErrorDTO handleBadRequest(BadRequestException e){
         return buildErrorInfo(e,HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = UnauthorizedException.class)
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
-    private ErrorDto handleUnauthorized(UnauthorizedException e){
+    private ErrorDTO handleUnauthorized(UnauthorizedException e){
         return buildErrorInfo(e, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    private ErrorDto handleNotFound(NotFoundException e){
+    private ErrorDTO handleNotFound(NotFoundException e){
         return buildErrorInfo(e, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = Exception.class)
     @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-    private ErrorDto handleAllOther(Exception e){
+    private ErrorDTO handleAllOther(Exception e){
         return buildErrorInfo(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ErrorDto buildErrorInfo(Exception e, HttpStatus status) {
-        ErrorDto dto = new ErrorDto();
+    private ErrorDTO buildErrorInfo(Exception e, HttpStatus status) {
+        ErrorDTO dto = new ErrorDTO();
         dto.setStatus(status.value());
         dto.setMessage(e.getMessage());
         dto.setTime(LocalDateTime.now());

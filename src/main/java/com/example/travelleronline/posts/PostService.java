@@ -14,6 +14,7 @@ import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.UserService;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.util.MasterService;
+import com.example.travelleronline.util.dao.PostDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,9 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class PostService extends MasterService {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
+    @Autowired
+    private PostDAO dao;
 
     public PostCreationDTO createPost(PostCreationDTO dto, int uid) {
         Category c = validatePost(dto);
@@ -124,77 +127,10 @@ public class PostService extends MasterService {
         userRepository.save(u);
     }
 
-//    public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
-//                                           int pageNumber, int rowsNumber) {
-//        String sqlTitleDate = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-//                "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
-//                "FROM posts AS p " +
-//                "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
-//                "JOIN users AS u ON (p.user_id = u.user_id) " +
-//                "WHERE title LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
-//        String sqlTitleLikes = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
-//                "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
-//                "FROM posts AS p " +
-//                "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
-//                "JOIN users AS u ON (p.user_id = u.user_id) " +
-//                "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
-//                "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND title LIKE ? " +
-//                "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
-//        String sqlHashtagDate = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-//                "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
-//                "FROM posts AS p " +
-//                "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
-//                "JOIN post_hashtags AS ph ON (p.post_id = ph.post_id) " +
-//                "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
-//                "JOIN users AS u ON (p.user_id = u.user_id) " +
-//                "WHERE h.`name` LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
-//        String sqlHashtagLikes = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-//                "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
-//                "FROM posts AS p " +
-//                "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
-//                "JOIN post_hashtags AS ph ON (p.post_id = ph.post_id) " +
-//                "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
-//                "JOIN users AS u ON (p.user_id = u.user_id) " +
-//                "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
-//                "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND h.`name` LIKE ? " +
-//                "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
-//        String sql = "";
-//        if (searchBy.equals("title")) { // TODO ? how to be refactored
-//            if (orderBy.equals("date")) {
-//                sql = sqlTitleDate;
-//            }
-//            else if (orderBy.equals("likes")) {
-//                sql = sqlTitleLikes;
-//            }
-//            else {
-//                throw new BadRequestException("Unknown value or parameter \"orderBy\".");
-//            }
-//        }
-//        else if (searchBy.equals("hashtag")) {
-//            if (orderBy.equals("date")) {
-//                sql = sqlHashtagDate;
-//            }
-//            else if (orderBy.equals("likes")) {
-//                sql = sqlHashtagLikes;
-//            }
-//            else {
-//                throw new BadRequestException("Unknown value or parameter \"orderBy\".");
-//            }
-//        }
-//        else {
-//            throw new BadRequestException("Unknown value or parameter \"searchBy\".");
-//        }
-//        StringBuilder builder = new StringBuilder();
-//        value = builder.append("%").append(value).append("%").toString();
-//        int offset = pageNumber * rowsNumber;
-//        return jdbcTemplate.query(
-//                sql, value, pageNumber, rowsNumber,
-//                (rs, rowsNumber) -> new PostFilterDTO(
-//                        rs.getInt("postId"),
-//                        rs.getString("category"),
-//                        rs.getString("title"),
-//                        rs.getString("userFullName"));
-//    }
+    public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
+                                           int pageNumber, int rowsNumber) {
+        return dao.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
+    }
 
     private Hashtag validateHashtag(String hashtag) {
         Hashtag tag = hashtagRepository.findByName(hashtag);

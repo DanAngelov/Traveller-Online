@@ -34,8 +34,6 @@ public abstract class MasterService {
     @Autowired
     protected ModelMapper modelMapper;
     @Autowired
-    protected JdbcTemplate jdbcTemplate;
-    @Autowired
     protected CategoryRepository categoryRepository;
     @Autowired
     protected CommentRepository commentRepository;
@@ -83,42 +81,6 @@ public abstract class MasterService {
             throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
         }
         return post;
-    }
-
-    // Cron Job
-
-    @Scheduled(cron = "0 0 0 */10 * *")
-    public void deleteUsersNotVerified() {
-        List<User> usersNotVerified = userRepository.findAllByIsVerified(false).stream()
-                .filter(user -> !user.getEmail().isBlank()) // to skip softly deleted users
-                .filter(user ->
-                        Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now()).getDays() >= 10)
-                .collect(Collectors.toList());
-        userRepository.deleteAll(usersNotVerified);
-    }
-
-    @SneakyThrows
-    @Scheduled(cron = "0 0 0 */180 * *")
-    public void deleteUsersNotLoggedInSoon() {
-        String sql1 = "SELECT user_photo_uri AS uri FROM users " +
-                "WHERE TIMESTAMPDIFF(DAY,NOW(),last_login_at) > 180";
-        List<String> uriForDelete = jdbcTemplate
-                .query(sql1, (rs, rowNum) -> rs.getString("uri"));
-        for (String uri : uriForDelete) {
-            Files.delete(Path.of(uri));
-        }
-        String sql2 = "UPDATE users " +
-                "SET first_name AS ' ', last_name AS ' ', email AS ' ', phone AS ' ', " +
-                "date_of_birth AS CURDATE(), gender AS 'n', user_photo_uri AS ' ' " +
-                "WHERE TIMESTAMPDIFF(DAY,NOW(),last_login_at) > 180";
-        jdbcTemplate.update(sql2);
-    }
-
-    @Scheduled(cron = "0 0 0 1 * *")
-    public void completeDeleteOfUsers() {
-        // HERE - statistics report (if needed)
-        List<User> usersSoftlyDeleted = userRepository.findAllByEmail(" ");
-        userRepository.deleteAll(usersSoftlyDeleted);
     }
 
 }
