@@ -5,18 +5,19 @@ import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
 import com.example.travelleronline.hashtags.Hashtag;
+import com.example.travelleronline.posts.dtos.PostEditDTO;
 import com.example.travelleronline.posts.dtos.PostFilterDTO;
 import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toPost.PostReaction;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
 import com.example.travelleronline.users.User;
-import com.example.travelleronline.users.UserService;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.util.MasterService;
 import com.example.travelleronline.util.dao.PostDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,26 +29,32 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Service
 public class PostService extends MasterService {
 
-    @Autowired
-    private UserService userService;
+    public static final int LONGITUDE_MIN_VALUE = -180;
+    public static final int LONGITUDE_MAX_VALUE = 180;
+    public static final int LATITUDE_MIN_VALUE = -90;
+    public static final int LATITUDE_MAX_VALUE = 90;
+    public static final int POST_DESCRIPTION_LENGTH_MAX = 500;
+    public static final int POST_TITLE_LENGTH_MIN = 3;
+    public static final int POST_TITLE_LENGTH_MAX = 100;
+
     @Autowired
     private PostDAO dao;
 
     public PostCreationDTO createPost(PostCreationDTO dto, int uid) {
         Category c = validatePost(dto);
         User u = getVerifiedUserById(uid);
-        Post p = new Post();
+        Post p = modelMapper.map(dto,Post.class);
         p.setOwner(u);
         p.setDateOfUpload(LocalDateTime.now());
-        p.setTitle(dto.getTitle());
-        p.setDescription(dto.getDescription());
-        p.setLocationLatitude(dto.getLocationLatitude());
-        p.setLocationLongitude(dto.getLocationLongitude());
         p.setCategory(c);
         postRepository.save(p);
         dto.setDateOfUpload(p.getDateOfUpload());
         dto.setPostId(p.getPostId());
         return dto;
+    }
+
+    public PostDTO getAPostById(int pid) {
+        return modelMapper.map(getPostById(pid), PostDTO.class);
     }
 
     public List<PostDTO> getPostsOfUser(int uid) {
@@ -63,35 +70,38 @@ public class PostService extends MasterService {
     private void validateDeletionOfPost(int pid, int uid) {
         Post p = getPostById(pid);
         User postOwner = p.getOwner();
-        User sessionUser = getVerifiedUserById(uid);
-        if (!sessionUser.equals(postOwner)) {
+        if (postOwner.getUserId() != uid) {
             throw new UnauthorizedException("You must be the post owner to delete this post.");
         }
     }
 
-    public void editPost(int pid, PostCreationDTO dto, int uid) {
-        validatePostOwner(pid, uid);
+    public void editPost(int pid, PostEditDTO dto, int uid) {
+        Post existingPost = validatePostOwner(pid, uid);
         Category c = validatePost(dto);
-        Post existingPost = getPostById(pid);
+        existingPost.setCategory(c);
         existingPost.setTitle(dto.getTitle());
         existingPost.setDescription(dto.getDescription());
-        existingPost.setCategory(c);
-        existingPost.setLocationLatitude(dto.getLocationLatitude());
-        existingPost.setLocationLongitude(dto.getLocationLongitude());
         postRepository.save(existingPost);
     }
 
     private Category validatePost(PostCreationDTO dto) {
         validateTitle(dto.getTitle());
         validateDescription(dto.getDescription());
-        Category c = validateCategory(dto.getCategory());
         validateLocation(dto.getLocationLatitude(), dto.getLocationLongitude());
-        return c;
+        return validateCategory(dto.getCategory());
+    }
+
+    private Category validatePost(PostEditDTO dto) {
+        validateTitle(dto.getTitle());
+        validateDescription(dto.getDescription());
+        return validateCategory(dto.getCategory());
     }
 
     private void validateLocation(double locationLatitude, double locationLongitude) {
-        if (locationLongitude < -180 || locationLongitude > 180 || locationLatitude < -90 || locationLatitude > 90) {
-            throw new BadRequestException("Location latitude must be a number between -90 and 90 and the longitude between -180 and 180.");
+        if (locationLongitude < LONGITUDE_MIN_VALUE || locationLongitude > LONGITUDE_MAX_VALUE ||
+            locationLatitude < LATITUDE_MIN_VALUE || locationLatitude > LATITUDE_MAX_VALUE) {
+            throw new BadRequestException("Location latitude must be a number between " + LATITUDE_MIN_VALUE + " and " + LATITUDE_MAX_VALUE +
+                    " and the longitude between " + LONGITUDE_MIN_VALUE + " and " + LONGITUDE_MAX_VALUE + ".");
         }
     }
 
@@ -104,8 +114,8 @@ public class PostService extends MasterService {
     }
 
     private void validateDescription(String desc) {
-        if (desc.length() > 500) {
-            throw new BadRequestException("Description must be between 0 and 500 letters.");
+        if (desc.length() > POST_DESCRIPTION_LENGTH_MAX) {
+            throw new BadRequestException("Description must not be over " + POST_DESCRIPTION_LENGTH_MAX + " letters.");
         }
     }
 
@@ -113,11 +123,12 @@ public class PostService extends MasterService {
         if (title == null || title.equals("null")) {
             throw new BadRequestException("Title can not be null.");
         }
-        if (title.length() < 3 || title.isBlank() || title.length() > 100) {
-            throw new BadRequestException("Title must be between 3 and 100 letters");
+        if (title.length() < POST_TITLE_LENGTH_MIN || title.isBlank() || title.length() > POST_TITLE_LENGTH_MAX) {
+            throw new BadRequestException("Title must be between " + POST_TITLE_LENGTH_MIN + " and " + POST_TITLE_LENGTH_MAX + " letters");
         }
     }
 
+    @Transactional
     public void tagUserToPost(int pid, int uid) {
         Post p = getPostById(pid);
         User u = getVerifiedUserById(uid);
@@ -130,14 +141,6 @@ public class PostService extends MasterService {
     public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
                                            int pageNumber, int rowsNumber) {
         return dao.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
-    }
-
-    private Hashtag validateHashtag(String hashtag) {
-        Hashtag tag = hashtagRepository.findByName(hashtag);
-        if (tag != null) {
-            return tag;
-        }
-        throw new BadRequestException("No such hashtag.");
     }
 
     public List<PostDTO> getPostsByCategory(String category) {

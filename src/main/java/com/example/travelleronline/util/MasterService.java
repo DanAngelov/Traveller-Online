@@ -76,8 +76,7 @@ public abstract class MasterService {
 
     protected Post validatePostOwner(int pid, int uid) {
         Post post = getPostById(pid);
-        User sessionUser = getVerifiedUserById(uid);
-        if(!sessionUser.equals(post.getOwner())) {
+        if(post.getOwner().getUserId() != uid) {
             throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
         }
         return post;

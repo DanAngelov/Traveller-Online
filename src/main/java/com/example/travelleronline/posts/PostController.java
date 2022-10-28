@@ -1,5 +1,6 @@
 package com.example.travelleronline.posts;
 
+import com.example.travelleronline.posts.dtos.PostEditDTO;
 import com.example.travelleronline.posts.dtos.PostFilterDTO;
 import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
@@ -17,6 +18,11 @@ public class PostController extends MasterController {
 
     @Autowired
     private PostService postService;
+
+    @GetMapping(value = "/posts/{pid}")
+    public PostDTO getAPostId(@PathVariable int pid) {
+        return postService.getAPostById(pid);
+    }
 
     @PostMapping(value = "/posts")
     public PostCreationDTO createPost(@RequestBody PostCreationDTO dto, HttpSession session){
@@ -53,7 +59,7 @@ public class PostController extends MasterController {
     }
 
     @PutMapping("/posts/{pid}")
-    public void editPost(@PathVariable int pid, @RequestBody PostCreationDTO dto, HttpSession session){
+    public void editPost(@PathVariable int pid, @RequestBody PostEditDTO dto, HttpSession session){
         int uid = getUserId(session);
         postService.editPost(pid, dto, uid);
     }
@@ -77,7 +83,7 @@ public class PostController extends MasterController {
 
     @PutMapping("/posts/{pid}/react")
     public LikesDislikesDTO reactTo(@PathVariable int pid, @RequestParam("reaction") String reaction, HttpSession session) {
-        int uid = (int) session.getAttribute(USER_ID);
+        int uid = getUserId(session);
         return postService.reactTo(uid, pid, reaction);
     }
 
@@ -85,12 +91,6 @@ public class PostController extends MasterController {
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid, @RequestParam("reaction") String reaction) {
         return postService.getUsersWhoReacted(pid, reaction);
     }
-
-    //TODO Keep this function or not ?
-//    @PutMapping("/posts/{id}")
-//    public PostDTO editPost(@PathVariable int id, @RequestBody PostDTO dto){
-//        return postService.editPost(id, dto);
-//    }
 
 
 }
