@@ -8,14 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
 public class CategoryController extends MasterController {
 
     public static final String ADMIN_PASSWORD = "4kd2!kd7@SE1";
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping(headers = "password=" + ADMIN_PASSWORD)
+    @PostMapping(value = "/categories", headers = "password=" + ADMIN_PASSWORD)
     public CategoryDTO createCategory(@RequestBody CategoryDTO dto) {
         return categoryService.createCategory(dto);
     }
@@ -25,12 +24,12 @@ public class CategoryController extends MasterController {
         return categoryService.getAllCategories();
     }
 
-    @PutMapping(value = "/{cid}", headers = "password=" + ADMIN_PASSWORD)
+    @PutMapping(value = "/categories/{cid}", headers = "password=" + ADMIN_PASSWORD)
     public CategoryDTO editCategory(@RequestBody CategoryDTO dto,@PathVariable int cid) {
         return categoryService.editCategory(dto, cid);
     }
 
-    @DeleteMapping(value = "/{cid}", headers = "password=" + ADMIN_PASSWORD)
+    @DeleteMapping(value = "/categories/{cid}", headers = "password=" + ADMIN_PASSWORD)
     public void deleteCategoryById(@PathVariable int cid) {
         categoryService.deleteCategoryById(cid);
     }

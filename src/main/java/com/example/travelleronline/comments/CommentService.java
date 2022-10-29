@@ -34,11 +34,10 @@ public class CommentService extends MasterService {
         return modelMapper.map(c, CommentWithParentDTO.class);
     }
 
-    public void editComment(int pid, int cid, CommentRequestDTO dto,int uid) {
-        validateOwnerOfComment(uid, cid);
-        validatePost(pid);
-        validateCommentContent(dto);
+    public void editComment(int cid, CommentRequestDTO dto,int uid) {
         Comment existingComment = getCommentById(cid);
+        validateOwnerOfComment(uid, cid);
+        validateCommentContent(dto);
         existingComment.setContent(dto.getContent());
         commentRepository.save(existingComment);
     }
@@ -50,10 +49,10 @@ public class CommentService extends MasterService {
         }
     }
 
-    public void deleteComment(int pid, int cid, int uid) {
-        Post p = getPostById(pid);
-        Comment c = getCommentById(cid);
-        if(validateDeletionOfComment(p, c, uid)) {
+    public void deleteComment(int cid, int uid) {
+        Comment comment = getCommentById(cid);
+        Post post = comment.getPost();
+        if(validateDeletionOfComment(post, comment, uid)) {
             commentRepository.deleteById(cid);
         }
         else {
@@ -91,16 +90,10 @@ public class CommentService extends MasterService {
         }
     }
 
-    public List<CommentWithParentDTO> getPostComments(int pid) {
-        Post p = getPostById(pid);
-        List<Comment> postComments = p.getComments();
-        return postComments.stream().map(c -> modelMapper.map(c, CommentWithParentDTO.class)).collect(Collectors.toList());
-    }
-
-    public CommentWithParentDTO respondToComment(int pid, int cid, int uid, CommentRequestDTO dto) {
-        Post p = getPostById(pid);
-        User u = getVerifiedUserById(uid);
+    public CommentWithParentDTO respondToComment(int cid, int uid, CommentRequestDTO dto) {
         Comment c = getCommentById(cid);
+        Post p = c.getPost();
+        User u = getVerifiedUserById(uid);
         Comment response = new Comment();
         response.setPost(p);
         response.setCreatedAt(LocalDateTime.now());

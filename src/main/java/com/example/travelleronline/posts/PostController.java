@@ -20,8 +20,8 @@ public class PostController extends MasterController {
     private PostService postService;
 
     @GetMapping("/posts/{pid}")
-    public PostDTO getAPostId(@PathVariable int pid) {
-        return postService.getAPostById(pid);
+    public PostDTO getPostById(@PathVariable int pid) {
+        return postService.getPost(pid);
     }
 
     @PostMapping("/posts")
@@ -37,8 +37,8 @@ public class PostController extends MasterController {
         return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
     }
 
-    @GetMapping("/posts/categories/{category}")
-    public List<PostFilterDTO> getPostsByCategory(@PathVariable String category,
+    @GetMapping("/posts/categories")
+    public List<PostFilterDTO> getPostsByCategory(@RequestParam String category,
                                             @RequestParam int pageNumber,
                                             @RequestParam int rowsNumber){
         return postService.getPostsByCategory(category, pageNumber, rowsNumber);
@@ -50,14 +50,17 @@ public class PostController extends MasterController {
         postService.deletePostById(pid, uid);
     }
 
+    // removes tag after second visit
     @PostMapping("/posts/{pid}/tag/{uid}")
-    public void tagUserToPost(@PathVariable int pid, @PathVariable int uid, HttpSession session) {
+    public void tagUserToPost(@PathVariable int pid, @PathVariable int uid,
+                              HttpSession session) {
         int sessionUserId = getUserId(session);
         postService.tagUserToPost(pid, uid, sessionUserId);
     }
 
     @PutMapping("/posts/{pid}")
-    public void editPost(@PathVariable int pid, @RequestBody PostEditDTO dto, HttpSession session) {
+    public void editPost(@PathVariable int pid, @RequestBody PostEditDTO dto,
+                         HttpSession session) {
         int uid = getUserId(session);
         postService.editPost(pid, dto, uid);
     }
@@ -88,7 +91,7 @@ public class PostController extends MasterController {
 
     @GetMapping("/posts/{pid}/users")
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid,
-                                                        @RequestParam("reaction") String reaction) {
+                                    @RequestParam("reaction") String reaction) {
         return postService.getUsersWhoReacted(pid, reaction);
     }
 

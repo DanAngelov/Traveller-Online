@@ -69,8 +69,8 @@ public class UserService extends MasterService {
         user.setVerified(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
-        userRepository.save(user);
         sendVerificationEmail(email, user.getUserId());
+        userRepository.save(user);
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 

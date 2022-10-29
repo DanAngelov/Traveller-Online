@@ -51,7 +51,7 @@ public class PostService extends MasterService {
         return dto;
     }
 
-    public PostDTO getAPostById(int pid) {
+    public PostDTO getPost(int pid) {
         return modelMapper.map(getPostById(pid), PostDTO.class);
     }
 
