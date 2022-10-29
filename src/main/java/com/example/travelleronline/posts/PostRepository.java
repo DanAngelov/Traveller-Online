@@ -15,4 +15,5 @@ public interface PostRepository extends PagingAndSortingRepository<Post,Integer>
     List<Post> findAllByCategory(Category category, Pageable page);
 
     Post getPostByOwnerAndPostId(User owner, int postId);
+
 }

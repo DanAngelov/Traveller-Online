@@ -18,12 +18,12 @@ public class CommentController extends MasterController {
     @Autowired
     private CommentService commentService;
 
-    @GetMapping(value = "/posts/{pid}/comments")
+    @GetMapping("/posts/{pid}/comments")
     public List<CommentWithParentDTO> getPostComments(@PathVariable int pid) {
         return commentService.getPostComments(pid);
     }
 
-    @PostMapping(value = "/posts/{pid}/comments/{cid}")
+    @PostMapping("/posts/{pid}/comments/{cid}")
     public CommentWithParentDTO respondToComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentRequestDTO dto, HttpSession session){
         int uid = getUserId(session);
         return commentService.respondToComment(pid, cid, uid, dto);

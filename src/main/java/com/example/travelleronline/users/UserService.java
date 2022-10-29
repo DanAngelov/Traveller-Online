@@ -66,12 +66,11 @@ public class UserService extends MasterService {
 
         User user = modelMapper.map(dto, User.class);
         user.setPassword(bCryptPasswordEncoder.encode(password));
-//        user.setVerified(false); // TODO bring back
-        user.setVerified(true); // TODO erase
+        user.setVerified(false);
         user.setCreatedAt(LocalDateTime.now());
-        user.setUserPhotoUri("def_profile_image.png");
+        user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
         userRepository.save(user);
-//        sendVerificationEmail(email, user.getUserId()); // TODO bring back
+        sendVerificationEmail(email, user.getUserId());
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 
@@ -244,6 +243,7 @@ public class UserService extends MasterService {
         Files.delete(Path.of(user.getUserPhotoUri()));
         user.setUserPhotoUri(" ");
         user.setVerified(false);
+        userRepository.save(user);
     }
 
     private void sendVerificationEmail(String email, int uid) {

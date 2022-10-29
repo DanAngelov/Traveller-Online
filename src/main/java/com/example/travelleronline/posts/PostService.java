@@ -122,8 +122,8 @@ public class PostService extends MasterService {
     }
 
     @Transactional
-    public void tagUserToPost(int pid, int uid) {
-        Post p = getPostById(pid);
+    public void tagUserToPost(int pid, int uid, int sessionUserId) {
+        Post p = validatePostOwner(pid,sessionUserId);
         User u = getVerifiedUserById(uid);
         p.getTaggedUsers().add(u);
         u.getTaggedInPosts().add(p);

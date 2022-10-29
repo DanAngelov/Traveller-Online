@@ -39,6 +39,7 @@ public abstract class MasterService {
     protected PostReactionRepository postReactRepo;
     @Autowired
     protected CommentReactionRepository commentReactRepo;
+    protected static final String DEF_PROFILE_IMAGE_URI = "/uploads/def_profile_image.png";
 
     protected User getVerifiedUserById(int uid) {
         User user = userRepository.findById(uid)
@@ -67,7 +68,7 @@ public abstract class MasterService {
     protected Post validatePostOwner(int pid, int uid) {
         Post post = getPostById(pid);
         if(post.getOwner().getUserId() != uid) {
-            throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
+            throw new UnauthorizedException("You are not the post owner");
         }
         return post;
     }

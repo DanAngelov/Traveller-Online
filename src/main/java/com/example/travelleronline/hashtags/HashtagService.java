@@ -9,10 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HashtagService extends MasterService {
+
+    public static final int HASHTAG_LENGTH_MIN = 2;
+    public static final int HASHTAG_LENGTH_MAX = 50;
+
     @Transactional
     public void addHashtagToPost(int pid, HashtagDTO hashtag, int uid) {
-        Post p = validatePostOwner(pid, uid);
-        for (Hashtag g : p.getPostHashtags()) {
+        validateHashtagName(hashtag.getName());
+        Post post = validatePostOwner(pid, uid);
+        for (Hashtag g : post.getPostHashtags()) {
             if(g.getName().equals(hashtag.getName())) {
                 throw new BadRequestException("Hashtag already included in post");
             }
@@ -23,8 +28,28 @@ public class HashtagService extends MasterService {
             tag.setName(hashtag.getName());
             hashtagRepository.save(tag);
         }
-        p.getPostHashtags().add(tag);
-        postRepository.save(p);
+        post.getPostHashtags().add(tag);
+        postRepository.save(post);
+    }
+
+    public void deleteHashtagFromPost(int pid, HashtagDTO hashtag, int uid) {
+        Post post = validatePostOwner(pid, uid);
+        for (Hashtag tag : post.getPostHashtags()) {
+            if(tag.getName().equals(hashtag.getName())) {
+                post.getPostHashtags().remove(tag);
+                postRepository.save(post);
+                return;
+            }
+        }
+        throw new BadRequestException("No such hashtag in the post.");
+    }
+
+    private void validateHashtagName(String name) {
+        if (name == null || name.isBlank() ||
+        name.length() < HASHTAG_LENGTH_MIN || name.length() > HASHTAG_LENGTH_MAX) {
+            throw new BadRequestException("Hashtag's name should be between " +
+                    HASHTAG_LENGTH_MIN + " and " + HASHTAG_LENGTH_MAX + " symbols.");
+        }
     }
 
 }

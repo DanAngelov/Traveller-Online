@@ -77,12 +77,12 @@ public class UserController extends MasterController {
         return userService.showSubscriptions(getUserId(session));
     }
 
-    @PutMapping("/users/edit-info")
+    @PutMapping("/users/info")
     public void editUserInfo(@RequestBody EditInfoDTO dto, HttpSession session) {
         userService.editUserInfo(dto, getUserId(session));
     }
 
-    @PutMapping("/users/change-password")
+    @PutMapping("/users/password")
     public void editUserPass(@RequestBody EditPassDTO dto, HttpSession session) {
         userService.editUserPass(dto, getUserId(session));
     }

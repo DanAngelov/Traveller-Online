@@ -25,10 +25,16 @@ public class FileController extends MasterController {
         fileService.deleteAllPostImages(pid, uid);
     }
 
-    @PostMapping("/posts/{pid}/video")
-    public void uploadVideo(@PathVariable int pid,@RequestParam MultipartFile video, HttpSession session){
+    @DeleteMapping("/posts/{pid}/video")
+    public void deletePostVideo(@PathVariable int pid, HttpSession session){
         int uid = getUserId(session);
-        fileService.uploadVideo(pid, video, uid);
+        fileService.deletePostVideo(pid, uid);
+    }
+
+    @PostMapping("/posts/{pid}/video")
+    public void uploadPostVideo(@PathVariable int pid,@RequestParam MultipartFile video, HttpSession session){
+        int uid = getUserId(session);
+        fileService.uploadPostVideo(pid, video, uid);
     }
 
     @PutMapping("/users/change-image")

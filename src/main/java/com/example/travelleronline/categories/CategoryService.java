@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryService extends MasterService {
 
+    public static final int CATEGORY_NAME_LENGTH_MIN = 3;
+    public static final int CATEGORY_NAME_LENGTH_MAX = 30;
+
     public CategoryDTO createCategory(CategoryDTO dto){
         validateCategoryName(dto.getName());
         Category c = new Category();
@@ -23,7 +26,9 @@ public class CategoryService extends MasterService {
 
     public List<CategoryDTO> getAllCategories(){
         List<Category> categories = categoryRepository.findAll();
-        return categories.stream().map(c -> modelMapper.map(c,CategoryDTO.class)).collect(Collectors.toList());
+        return categories.stream()
+                .map(c -> modelMapper.map(c,CategoryDTO.class))
+                .collect(Collectors.toList());
     }
 
     public CategoryDTO editCategory(CategoryDTO dto, int cid) {
@@ -46,11 +51,12 @@ public class CategoryService extends MasterService {
         if (c != null) {
             throw new BadRequestException("Category with this name already exists.");
         }
-        if(category == null || category.equals("null")) {
-            throw new BadRequestException("Category can not be null.");
+        if(category == null || category.isBlank()) {
+            throw new BadRequestException("Category can not be blank.");
         }
-        if(category.length() < 3 || category.isBlank() || category.length() > 30) {
-            throw new BadRequestException("Category name must be between 3 and 30 letters");
+        if(category.length() < CATEGORY_NAME_LENGTH_MIN || category.length() > CATEGORY_NAME_LENGTH_MAX) {
+            throw new BadRequestException("Category name must be between " +
+                    CATEGORY_NAME_LENGTH_MIN + " and " + CATEGORY_NAME_LENGTH_MAX + " letters");
         }
     }
 

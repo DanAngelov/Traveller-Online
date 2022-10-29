@@ -13,10 +13,20 @@ public class HashtagController extends MasterController {
     @Autowired
     HashtagService hashtagService;
 
-    @PostMapping(value = "/posts/{pid}")
-    public void addHashtagToPost(@PathVariable int pid, @RequestBody HashtagDTO hashtag, HttpSession session){
+    @PostMapping("/posts/{pid}/hashtags")
+    public void addHashtagToPost(@PathVariable int pid,
+                                 @RequestBody HashtagDTO hashtag,
+                                 HttpSession session){
         int uid = getUserId(session);
         hashtagService.addHashtagToPost(pid, hashtag, uid);
+    }
+
+    @DeleteMapping("/posts/{pid}/hashtags")
+    public void deleteHashtagFromPost(@PathVariable int pid,
+                                      @RequestBody HashtagDTO hashtag,
+                                      HttpSession session){
+        int uid = getUserId(session);
+        hashtagService.deleteHashtagFromPost(pid, hashtag, uid);
     }
 
 }

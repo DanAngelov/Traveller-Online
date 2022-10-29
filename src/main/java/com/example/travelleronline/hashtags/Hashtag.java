@@ -19,5 +19,4 @@ public class Hashtag {
     @ManyToMany(mappedBy = "postHashtags")
     private List<Post> posts;
 
-
 }

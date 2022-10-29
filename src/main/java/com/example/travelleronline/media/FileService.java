@@ -5,6 +5,7 @@ import com.example.travelleronline.general.exceptions.NotFoundException;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.general.MasterService;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @Service
@@ -52,27 +54,29 @@ public class FileService extends MasterService {
         return post;
     }
 
-    private void validateImage(MultipartFile file) {
-        if (file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/jpg")
-        || file.getContentType().equals("image/png")) {
+    private void validateImage(MultipartFile image) {
+        if (image.getContentType().equals("image/jpeg") || image.getContentType().equals("image/jpg")
+        || image.getContentType().equals("image/png")) {
             return;
         }
         throw new BadRequestException("File type needs to be jpg,jpeg or png.");
     };
-    private void validateVideo(MultipartFile file){
-        if(file.getContentType().equals("video/mp4") || file.getContentType().equals("video/avi")
-            || file.getContentType().equals("video/x-msvideo")) {
+    private void validateVideo(MultipartFile video){
+        if (video == null) {
+            throw new BadRequestException("Video not uploaded.");
+        }
+        if(video.getContentType().equals("video/mp4") || video.getContentType().equals("video/avi")
+            || video.getContentType().equals("video/x-msvideo")) {
             return;
         }
         throw new BadRequestException("File type needs to be mp4 or avi.");
     };
 
-    public void uploadVideo(int pid, MultipartFile file, int uid) {
+    public void uploadPostVideo(int pid, MultipartFile file, int uid) {
         validateVideo(file);
         Post post = validatePost(pid, uid);
         if(post.getClipUri() != null) {
-            File oldClip = new File(post.getClipUri());
-            oldClip.delete();
+            deleteOldFile(post.getClipUri());
         }
         String extension = FilenameUtils.getExtension(file.getOriginalFilename());
         String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
@@ -89,10 +93,17 @@ public class FileService extends MasterService {
 
     public void changeProfileImage(int uid, MultipartFile file) {
         User user = getVerifiedUserById(uid);
+        String oldImageURI = user.getUserPhotoUri();
+        if (file == null) {
+            if (!oldImageURI.equals(DEF_PROFILE_IMAGE_URI)) {
+                deleteOldFile(oldImageURI);
+            }
+            user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
+            return;
+        }
         validateImage(file);
-        if(user.getUserPhotoUri() != null) {
-            File oldImage = new File(user.getUserPhotoUri());
-            oldImage.delete();
+        if(oldImageURI != null && !oldImageURI.equals(DEF_PROFILE_IMAGE_URI)) {
+            deleteOldFile(user.getUserPhotoUri());
         }
         String extension = FilenameUtils.getExtension(file.getOriginalFilename());
         String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
@@ -109,7 +120,23 @@ public class FileService extends MasterService {
 
     @Transactional
     public void deleteAllPostImages(int pid, int uid) {
-        Post p = validatePost(pid,uid);
-        postImageRepository.deleteAllByPost(p);
+        Post post = validatePost(pid,uid);
+        for (PostImage image : post.getPostImages()) {
+            deleteOldFile(image.getImageUri());
+        }
+        postImageRepository.deleteAllByPost(post);
     }
+
+    public void deletePostVideo(int pid, int uid) {
+        Post post = validatePost(pid,uid);
+        deleteOldFile(post.getClipUri());
+        post.setClipUri(null);
+        postRepository.save(post);
+    }
+
+    @SneakyThrows
+    private void deleteOldFile(String uri) {
+        Files.delete(Path.of(uri));
+    }
+
 }
