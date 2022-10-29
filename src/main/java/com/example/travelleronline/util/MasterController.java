@@ -3,12 +3,13 @@ package com.example.travelleronline.util;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
-
+@Slf4j
 @RestController
 public abstract class MasterController {
 
@@ -45,7 +46,7 @@ public abstract class MasterController {
         dto.setStatus(status.value());
         dto.setMessage(e.getMessage());
         dto.setTime(LocalDateTime.now());
-        e.printStackTrace(); //TODO add to log file
+        log.error("Error with message={}, stackTrace={}",e.getMessage(),e.getStackTrace());
         return dto;
     }
 

@@ -20,11 +20,11 @@ public class FileService extends MasterService {
 
     @Transactional
     public void uploadImage(int pid, MultipartFile file, int uid) {
-        //TODO validate image type (mime)
         Post post = validatePost(pid, uid);
+        validateImage(file);
         List<PostImage> postImages = post.getPostImages();
-        if(postImages.size() > 2) {
-            throw new BadRequestException("You can have only 3 images per post.");
+        if (postImages.size() > 2) {
+            throw new BadRequestException("You can have a maximum of 3 images per post.");
         }
         String extension = FilenameUtils.getExtension(file.getOriginalFilename());
         String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
@@ -38,23 +38,37 @@ public class FileService extends MasterService {
         PostImage image = new PostImage();
         image.setImageUri(name);
         image.setPost(post);
-        postImageRepository.save(image);
         postImages.add(image);
         post.setPostImages(postImages);
+        postImageRepository.save(image);
         postRepository.save(post);
     }
 
     private Post validatePost(int pid, int uid) {
-        User owner = getVerifiedUserById(uid);
-        Post post = postRepository.getPostByOwnerAndPostId(owner, pid);
-        if(post == null) {
+        Post post = getPostById(pid);
+        if(post.getOwner().getUserId() != uid) {
             throw new NotFoundException("Post not found.");
         }
         return post;
     }
 
+    private void validateImage(MultipartFile file) {
+        if (file.getContentType().equals("image/jpeg") || file.getContentType().equals("image/jpg")
+        || file.getContentType().equals("image/png")) {
+            return;
+        }
+        throw new BadRequestException("File type needs to be jpg,jpeg or png.");
+    };
+    private void validateVideo(MultipartFile file){
+        if(file.getContentType().equals("video/mp4") || file.getContentType().equals("video/avi")
+            || file.getContentType().equals("video/x-msvideo")) {
+            return;
+        }
+        throw new BadRequestException("File type needs to be mp4 or avi.");
+    };
+
     public void uploadVideo(int pid, MultipartFile file, int uid) {
-        //TODO validate video type (mime)
+        validateVideo(file);
         Post post = validatePost(pid, uid);
         if(post.getClipUri() != null) {
             File oldClip = new File(post.getClipUri());
@@ -75,7 +89,7 @@ public class FileService extends MasterService {
 
     public void changeProfileImage(int uid, MultipartFile file) {
         User user = getVerifiedUserById(uid);
-        //TODO validate
+        validateImage(file);
         if(user.getUserPhotoUri() != null) {
             File oldImage = new File(user.getUserPhotoUri());
             oldImage.delete();
@@ -91,5 +105,11 @@ public class FileService extends MasterService {
         }
         user.setUserPhotoUri(name);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteAllPostImages(int pid, int uid) {
+        Post p = validatePost(pid,uid);
+        postImageRepository.deleteAllByPost(p);
     }
 }

@@ -1,8 +1,7 @@
 package com.example.travelleronline.comments;
 
 import com.example.travelleronline.comments.dtos.CommentRequestDTO;
-import com.example.travelleronline.comments.dtos.CommentResponseDTO;
-import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
+import com.example.travelleronline.comments.dtos.CommentWithParentDTO;
 import com.example.travelleronline.exceptions.BadRequestException;
 import com.example.travelleronline.exceptions.NotFoundException;
 import com.example.travelleronline.exceptions.UnauthorizedException;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class CommentService extends MasterService {
 
-    public CommentResponseDTO createComment(int pid, CommentRequestDTO dto, int uid) {
+    public CommentWithParentDTO createComment(int pid, CommentRequestDTO dto, int uid) {
         validatePost(pid);
         validateCommentContent(dto);
         Post p = getPostById(pid);
@@ -32,7 +31,7 @@ public class CommentService extends MasterService {
         c.setUser(u);
         c.setPost(p);
         commentRepository.save(c);
-        return modelMapper.map(c, CommentResponseDTO.class);
+        return modelMapper.map(c, CommentWithParentDTO.class);
     }
 
     public void editComment(int pid, int cid, CommentRequestDTO dto,int uid) {
@@ -92,13 +91,13 @@ public class CommentService extends MasterService {
         }
     }
 
-    public List<CommentWithoutPostDTO> getPostComments(int pid) {
+    public List<CommentWithParentDTO> getPostComments(int pid) {
         Post p = getPostById(pid);
         List<Comment> postComments = p.getComments();
-        return postComments.stream().map(c -> modelMapper.map(c, CommentWithoutPostDTO.class)).collect(Collectors.toList());
+        return postComments.stream().map(c -> modelMapper.map(c, CommentWithParentDTO.class)).collect(Collectors.toList());
     }
 
-    public CommentResponseDTO respondToComment(int pid, int cid, int uid, CommentRequestDTO dto) {
+    public CommentWithParentDTO respondToComment(int pid, int cid, int uid, CommentRequestDTO dto) {
         Post p = getPostById(pid);
         User u = getVerifiedUserById(uid);
         Comment c = getCommentById(cid);
@@ -109,7 +108,7 @@ public class CommentService extends MasterService {
         response.setUser(u);
         response.setParent(c);
         commentRepository.save(response);
-        return modelMapper.map(response,CommentResponseDTO.class);
+        return modelMapper.map(response, CommentWithParentDTO.class);
     }
 
     public LikesDislikesDTO reactTo(int uid, int cid, String reaction) {

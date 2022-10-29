@@ -1,0 +1,33 @@
+<configuration>
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.FileAppender">
+        <file>application-error.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{yy/MM/dd HH:mm:ss.SSS} %-5level %-38logger{38} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_INFO" class="ch.qos.logback.core.FileAppender">
+        <file>application-info.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{yy/MM/dd HH:mm:ss.SSS} %-5level %-38logger{38} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yy/MM/dd HH:mm:ss.SSS} %-5level %-38logger{38} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE_INFO" />
+    </root>
+
+    <logger name="com.example.travelleronline" level="ERROR">
+        <appender-ref ref="FILE_ERROR"/>
+    </logger>
+
+</configuration>

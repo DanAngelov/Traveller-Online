@@ -3,8 +3,7 @@ package com.example.travelleronline.comments;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.comments.dtos.CommentRequestDTO;
-import com.example.travelleronline.comments.dtos.CommentResponseDTO;
-import com.example.travelleronline.comments.dtos.CommentWithoutPostDTO;
+import com.example.travelleronline.comments.dtos.CommentWithParentDTO;
 import com.example.travelleronline.util.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +19,18 @@ public class CommentController extends MasterController {
     private CommentService commentService;
 
     @GetMapping(value = "/posts/{pid}/comments")
-    public List<CommentWithoutPostDTO> getPostComments(@PathVariable int pid) {
+    public List<CommentWithParentDTO> getPostComments(@PathVariable int pid) {
         return commentService.getPostComments(pid);
     }
 
     @PostMapping(value = "/posts/{pid}/comments/{cid}")
-    public CommentResponseDTO respondToComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentRequestDTO dto,HttpSession session){
+    public CommentWithParentDTO respondToComment(@PathVariable int pid, @PathVariable int cid, @RequestBody CommentRequestDTO dto, HttpSession session){
         int uid = getUserId(session);
         return commentService.respondToComment(pid, cid, uid, dto);
     }
 
     @PostMapping("/posts/{pid}/comments")
-    public CommentResponseDTO createComment(@PathVariable int pid, @RequestBody CommentRequestDTO dto, HttpSession session){
+    public CommentWithParentDTO createComment(@PathVariable int pid, @RequestBody CommentRequestDTO dto, HttpSession session){
         int uid = getUserId(session);
         return commentService.createComment(pid, dto, uid);
     }

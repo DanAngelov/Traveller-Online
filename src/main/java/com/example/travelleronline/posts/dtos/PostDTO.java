@@ -1,10 +1,9 @@
 package com.example.travelleronline.posts.dtos;
 
 import com.example.travelleronline.categories.dtos.CategoryDTO;
-import com.example.travelleronline.comments.dtos.CommentDTO;
+import com.example.travelleronline.comments.dtos.CommentWithoutParentDTO;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.media.PostImageDTO;
-import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.users.dtos.UserProfileDTO;
 import lombok.Data;
@@ -24,7 +23,7 @@ public class PostDTO {
     private double locationLatitude;
     private double locationLongitude;
     private CategoryDTO category;
-    private List<CommentDTO> comments;
+    private List<CommentWithoutParentDTO> comments;
     private List<PostImageDTO> postImages;
     private List<UserIdNamesPhotoDTO> taggedUsers;
     private List<HashtagDTO> postHashtags;
