@@ -1,17 +1,19 @@
 package com.example.travelleronline.comments.dtos;
 
+import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class CommentResponseDTO {
+public class CommentWithParentDTO {
 
     private int commentId;
     private LocalDateTime createdAt;
     private String content;
     private UserIdNamesPhotoDTO user;
-    private CommentDTO parent;
+    private CommentWithoutParentDTO parent;
+    private LikesDislikesDTO reactions;
 
 }

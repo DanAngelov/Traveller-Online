@@ -1,6 +1,6 @@
-package com.example.travelleronline.interceptors;
+package com.example.travelleronline.general.interceptors;
 
-import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +17,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
                              HttpServletResponse response,
                              Object handler) throws Exception {
         String uri = request.getRequestURI();
-        System.out.println(uri);
         if (uri.contains("registration") ||
         uri.contains("email-verification") ||
         uri.contains("login") ||

@@ -1,14 +1,15 @@
 package com.example.travelleronline;
 
+import com.example.travelleronline.comments.dtos.CommentWithParentDTO;
+import com.example.travelleronline.comments.dtos.CommentWithoutParentDTO;
 import com.example.travelleronline.comments.Comment;
-import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.posts.dtos.PostDTO;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserProfileDTO;
-import com.example.travelleronline.util.converters.CommentReactionsListToIntegersConverter;
-import com.example.travelleronline.util.converters.PostReactionsListToIntegersConverter;
-import com.example.travelleronline.util.converters.UserSubscribersListToIntegerConverter;
+import com.example.travelleronline.general.util.converters.CommentReactionsListToIntegersConverter;
+import com.example.travelleronline.general.util.converters.PostReactionsListToIntegersConverter;
+import com.example.travelleronline.general.util.converters.UserSubscribersListToIntegerConverter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.springframework.boot.SpringApplication;
@@ -54,14 +55,23 @@ public class TravellerOnlineApplication {
                     }
                 });
 
-        modelMapper.typeMap(Comment.class, CommentDTO.class)
-                .addMappings(new PropertyMap<Comment, CommentDTO>() {
+        modelMapper.typeMap(Comment.class, CommentWithoutParentDTO.class)
+                .addMappings(new PropertyMap<Comment, CommentWithoutParentDTO>() {
                     @Override
                     protected void configure() {
                         using(new CommentReactionsListToIntegersConverter())
                                 .map(source.getCommentReactions(), destination.getReactions());
                     }
-                }); //TODO for: CommentWithoutParentDTO, CommentWithParentDTO
+                });
+
+        modelMapper.typeMap(Comment.class, CommentWithParentDTO.class)
+                .addMappings(new PropertyMap<Comment, CommentWithParentDTO>() {
+                    @Override
+                    protected void configure() {
+                        using(new CommentReactionsListToIntegersConverter())
+                                .map(source.getCommentReactions(), destination.getReactions());
+                    }
+                });
 
         return modelMapper;
     }

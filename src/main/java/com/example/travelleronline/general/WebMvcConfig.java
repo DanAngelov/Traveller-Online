@@ -1,5 +1,6 @@
-package com.example.travelleronline.interceptors;
+package com.example.travelleronline.general;
 
+import com.example.travelleronline.general.interceptors.SecurityInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

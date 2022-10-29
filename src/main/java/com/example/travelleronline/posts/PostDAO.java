@@ -1,6 +1,6 @@
-package com.example.travelleronline.util.dao;
+package com.example.travelleronline.posts;
 
-import com.example.travelleronline.exceptions.BadRequestException;
+import com.example.travelleronline.general.exceptions.BadRequestException;
 import com.example.travelleronline.posts.dtos.PostFilterDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

@@ -1,7 +1,7 @@
 package com.example.travelleronline.categories;
 
 import com.example.travelleronline.categories.dtos.CategoryDTO;
-import com.example.travelleronline.util.MasterController;
+import com.example.travelleronline.general.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

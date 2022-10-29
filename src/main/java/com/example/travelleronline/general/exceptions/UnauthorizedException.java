@@ -1,4 +1,4 @@
-package com.example.travelleronline.exceptions;
+package com.example.travelleronline.general.exceptions;
 
 public class UnauthorizedException extends RuntimeException {
 

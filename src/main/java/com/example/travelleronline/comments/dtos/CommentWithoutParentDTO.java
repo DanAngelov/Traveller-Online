@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CommentDTO {
+public class CommentWithoutParentDTO {
 
     private int commentId;
     private LocalDateTime createdAt;

@@ -1,4 +1,4 @@
-package com.example.travelleronline.util.converters;
+package com.example.travelleronline.general.util.converters;
 
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toComment.CommentReaction;

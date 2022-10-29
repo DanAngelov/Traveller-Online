@@ -1,9 +1,9 @@
 package com.example.travelleronline.hashtags;
 
-import com.example.travelleronline.exceptions.BadRequestException;
+import com.example.travelleronline.general.exceptions.BadRequestException;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.util.MasterService;
+import com.example.travelleronline.general.MasterService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

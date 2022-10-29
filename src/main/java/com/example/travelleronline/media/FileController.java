@@ -1,6 +1,6 @@
 package com.example.travelleronline.media;
 
-import com.example.travelleronline.util.MasterController;
+import com.example.travelleronline.general.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +17,12 @@ public class FileController extends MasterController {
     public void uploadImage(@PathVariable int pid, @RequestParam MultipartFile image, HttpSession session){
         int uid = getUserId(session);
         fileService.uploadImage(pid, image, uid);
+    }
+
+    @DeleteMapping("/posts/{pid}/images")
+    public void deleteAllPostImages(@PathVariable int pid, HttpSession session){
+        int uid = getUserId(session);
+        fileService.deleteAllPostImages(pid, uid);
     }
 
     @PostMapping("/posts/{pid}/video")

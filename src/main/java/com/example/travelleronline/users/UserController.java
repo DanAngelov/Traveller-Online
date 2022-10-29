@@ -1,8 +1,8 @@
 package com.example.travelleronline.users;
 
 import com.example.travelleronline.users.dtos.*;
-import com.example.travelleronline.util.MasterController;
-import com.example.travelleronline.exceptions.BadRequestException;
+import com.example.travelleronline.general.MasterController;
+import com.example.travelleronline.general.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

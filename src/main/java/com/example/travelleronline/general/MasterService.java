@@ -1,12 +1,12 @@
-package com.example.travelleronline.util;
+package com.example.travelleronline.general;
 
 import com.example.travelleronline.categories.Category;
 import com.example.travelleronline.categories.CategoryRepository;
 import com.example.travelleronline.comments.Comment;
 import com.example.travelleronline.comments.CommentRepository;
-import com.example.travelleronline.exceptions.BadRequestException;
-import com.example.travelleronline.exceptions.NotFoundException;
-import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.general.exceptions.BadRequestException;
+import com.example.travelleronline.general.exceptions.NotFoundException;
+import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import com.example.travelleronline.hashtags.HashtagRepository;
 import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.Post;
@@ -15,19 +15,9 @@ import com.example.travelleronline.reactions.toComment.CommentReactionRepository
 import com.example.travelleronline.reactions.toPost.PostReactionRepository;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.UserRepository;
-import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public abstract class MasterService {
@@ -76,8 +66,7 @@ public abstract class MasterService {
 
     protected Post validatePostOwner(int pid, int uid) {
         Post post = getPostById(pid);
-        User sessionUser = getVerifiedUserById(uid);
-        if(!sessionUser.equals(post.getOwner())) {
+        if(post.getOwner().getUserId() != uid) {
             throw new UnauthorizedException("You must be the post owner to add hashtags to the post.");
         }
         return post;

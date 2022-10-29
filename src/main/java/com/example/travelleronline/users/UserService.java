@@ -1,12 +1,11 @@
 package com.example.travelleronline.users;
 
-import com.example.travelleronline.exceptions.BadRequestException;
-import com.example.travelleronline.exceptions.NotFoundException;
-import com.example.travelleronline.exceptions.UnauthorizedException;
+import com.example.travelleronline.general.exceptions.BadRequestException;
+import com.example.travelleronline.general.exceptions.NotFoundException;
+import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import com.example.travelleronline.users.dtos.*;
-import com.example.travelleronline.util.MasterService;
-import com.example.travelleronline.util.TokenCoder;
-import com.example.travelleronline.util.dao.UserDAO;
+import com.example.travelleronline.general.MasterService;
+import com.example.travelleronline.general.util.TokenCoder;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;

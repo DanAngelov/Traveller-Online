@@ -1,4 +1,4 @@
-package com.example.travelleronline.util;
+package com.example.travelleronline.general;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package com.example.travelleronline.hashtags;
 
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
-import com.example.travelleronline.util.MasterController;
+import com.example.travelleronline.general.MasterController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

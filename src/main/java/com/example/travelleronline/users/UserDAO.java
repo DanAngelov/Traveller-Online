@@ -1,4 +1,4 @@
-package com.example.travelleronline.util.dao;
+package com.example.travelleronline.users;
 
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package com.example.travelleronline.categories;
 
 import com.example.travelleronline.categories.dtos.CategoryDTO;
-import com.example.travelleronline.exceptions.BadRequestException;
-import com.example.travelleronline.util.MasterService;
+import com.example.travelleronline.general.exceptions.BadRequestException;
+import com.example.travelleronline.general.MasterService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
