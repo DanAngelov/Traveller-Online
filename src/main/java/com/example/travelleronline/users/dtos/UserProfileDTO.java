@@ -13,5 +13,6 @@ public class UserProfileDTO {
     private LocalDate dateOfBirth;
     private char gender;
     private String userPhotoUri;
+    private int subscribers;
 
 }

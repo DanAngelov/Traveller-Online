@@ -1,8 +1,6 @@
 package com.example.travelleronline.users;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +11,7 @@ public interface UserRepository extends PagingAndSortingRepository<User, Integer
 
     List<User> findAllByEmail (String email);
 
-    List<User> findAllByPhone (String phone);
+    List<User> findAllByPhoneNumber(String phone);
 
     List<User> findAllByFirstNameLikeAndLastNameLike(String firstName, String lastName,
                                                      Pageable page);

@@ -1,5 +1,6 @@
 package com.example.travelleronline.reactions;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

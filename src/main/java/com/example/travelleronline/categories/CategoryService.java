@@ -49,8 +49,8 @@ public class CategoryService extends MasterService {
         if(category == null || category.equals("null")) {
             throw new BadRequestException("Category can not be null.");
         }
-        if(category.length() < 3 || category.isBlank() || category.length() > 10) {
-            throw new BadRequestException("Category name must be between 3 and 100 letters");
+        if(category.length() < 3 || category.isBlank() || category.length() > 30) {
+            throw new BadRequestException("Category name must be between 3 and 30 letters");
         }
     }
 

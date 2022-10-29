@@ -16,10 +16,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) throws Exception {
-        HttpSession session = request.getSession();
-        if (session.isNew()) {
-            session.setMaxInactiveInterval(10*60); // 10 minutes
-        }
         String uri = request.getRequestURI();
         System.out.println(uri);
         if (uri.contains("registration") ||
@@ -28,6 +24,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         uri.contains("logout")) {
             return true;
         }
+        HttpSession session = request.getSession();
         String ip = request.getRemoteAddr();
         if (session.getAttribute(LOGGED) == null ||
                 !(boolean) session.getAttribute(LOGGED) ||

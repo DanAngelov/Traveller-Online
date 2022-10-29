@@ -4,6 +4,7 @@ import com.example.travelleronline.categories.dtos.CategoryDTO;
 import com.example.travelleronline.comments.dtos.CommentDTO;
 import com.example.travelleronline.hashtags.dtos.HashtagDTO;
 import com.example.travelleronline.media.PostImageDTO;
+import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.users.dtos.UserProfileDTO;
@@ -28,4 +29,6 @@ public class PostDTO {
     private List<PostImageDTO> postImages;
     private List<UserIdNamesPhotoDTO> taggedUsers;
     private List<HashtagDTO> postHashtags;
+    private LikesDislikesDTO reactions;
+
 }

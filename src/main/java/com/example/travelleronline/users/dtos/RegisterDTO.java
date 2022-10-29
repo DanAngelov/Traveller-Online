@@ -10,7 +10,7 @@ public class RegisterDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private String phone;
+    private String phoneNumber;
     private String password;
     private String confirmPassword;
     private LocalDate dateOfBirth;

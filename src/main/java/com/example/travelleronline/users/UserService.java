@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,8 +50,8 @@ public class UserService extends MasterService {
         validateName(dto.getLastName());
         String email = dto.getEmail().trim();
         validateEmail(email);
-        String phone = dto.getPhone();
-        validatePhone(phone);
+        String phoneNumber = dto.getPhoneNumber();
+        validatePhone(phoneNumber);
         validatePassword(password);
         validateDateOfBirth(dto.getDateOfBirth());
         validateGender(dto.getGender());
@@ -61,19 +60,19 @@ public class UserService extends MasterService {
             throw new BadRequestException("An user with this e-mail " +
                     "has already been registered.");
         }
-        if (userRepository.findAllByPhone(phone).size() > 0) {
+        if (userRepository.findAllByPhoneNumber(phoneNumber).size() > 0) {
             throw new BadRequestException("An user with this phone number " +
                     "has already been registered.");
         }
 
         User user = modelMapper.map(dto, User.class);
         user.setPassword(bCryptPasswordEncoder.encode(password));
-//        user.setVerified(false); TODO bring back
+//        user.setVerified(false); // TODO bring back
         user.setVerified(true); // TODO erase
         user.setCreatedAt(LocalDateTime.now());
-        // TODO setDefaultProfilePic
+        user.setUserPhotoUri("def_profile_image.png");
         userRepository.save(user);
-//        sendVerificationEmail(email, user.getUserId()); TODO bring back
+//        sendVerificationEmail(email, user.getUserId()); // TODO bring back
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 
@@ -110,6 +109,7 @@ public class UserService extends MasterService {
             throw new UnauthorizedException("You have to verify your email first.");
         }
         user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
         return modelMapper.map(user, UserProfileDTO.class);
     }
 
@@ -120,7 +120,8 @@ public class UserService extends MasterService {
 
     List<UserIdNamesPhotoDTO> getAllByName(String name, int pageNumber, int rowsNumber) {
         name = name.toLowerCase().trim();
-        Pageable page = PageRequest.of(pageNumber, rowsNumber, Sort.by("firstName"));
+        Pageable page = PageRequest.of(pageNumber, rowsNumber,
+                Sort.by("firstName").and(Sort.by("lastName")));
         if (!name.contains("_")) {
             StringBuilder builder = new StringBuilder();
             name = builder.append("%").append(name).append("%").toString();
@@ -177,6 +178,13 @@ public class UserService extends MasterService {
         User user = getVerifiedUserById(uid);
         return user.getSubscribers().stream()
                 .map(u -> modelMapper.map(u, UserProfileDTO.class))
+                .sorted((s1, s2) -> {
+            if (s1.getFirstName().compareTo(s2.getFirstName()) == 0) {
+                return s1.getLastName().compareTo(s2.getLastName());
+            } else {
+                return s1.getFirstName().compareTo(s2.getFirstName());
+            }
+        })
                 .collect(Collectors.toList());
     }
 
@@ -184,6 +192,13 @@ public class UserService extends MasterService {
         User user = getVerifiedUserById(uid);
         return user.getSubscriptions().stream()
                 .map(u -> modelMapper.map(u, UserProfileDTO.class))
+                .sorted((s1, s2) -> {
+                    if (s1.getFirstName().compareTo(s2.getFirstName()) == 0) {
+                        return s1.getLastName().compareTo(s2.getLastName());
+                    } else {
+                        return s1.getFirstName().compareTo(s2.getFirstName());
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
@@ -224,7 +239,7 @@ public class UserService extends MasterService {
         user.setFirstName(" ");
         user.setLastName(" ");
         user.setEmail(" ");
-        user.setPhone(" ");
+        user.setPhoneNumber(" ");
         user.setDateOfBirth(LocalDate.now());
         user.setGender('n');
         Files.delete(Path.of(user.getUserPhotoUri()));
@@ -247,7 +262,7 @@ public class UserService extends MasterService {
     // user's info and password validations
 
     private void validateName(String name) {
-        if (name.isBlank() || name.length() > 100) {
+        if (name.isBlank() || name.length() > 50) {
             throw new BadRequestException("Name is blank or too long.");
         }
     }
@@ -313,7 +328,7 @@ public class UserService extends MasterService {
 
     @SneakyThrows
     @Scheduled(cron = "0 0 0 */180 * *")
-    public void deleteUsersNotLoggedInSoon() {
+    public void softlyDeleteUsersNotLoggedInSoon() {
         dao.deleteUsersNotLoggedInSoon();
     }
 

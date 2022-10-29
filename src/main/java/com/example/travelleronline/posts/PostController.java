@@ -24,11 +24,6 @@ public class PostController extends MasterController {
         return postService.createPost(dto, uid);
     }
 
-    @GetMapping(value = "/users/{uid}/posts")
-    public List<PostDTO> getAllPostsOfUser(@PathVariable int uid){
-        return postService.getPostsOfUser(uid);
-    }
-
     @GetMapping(value = "/posts/filter")
     public List<PostFilterDTO> filterPosts(@RequestParam String searchBy,
     @RequestParam String value, @RequestParam String orderBy,
@@ -37,8 +32,10 @@ public class PostController extends MasterController {
     }
 
     @GetMapping(value = "/posts/categories/{category}")
-    public List<PostDTO> getPostsByCategory(@PathVariable String category){
-        return postService.getPostsByCategory(category);
+    public List<PostFilterDTO> getPostsByCategory(@PathVariable String category,
+                                            @RequestParam int pageNumber,
+                                            @RequestParam int rowsNumber){
+        return postService.getPostsByCategory(category, pageNumber, rowsNumber);
     }
 
     @DeleteMapping(value = "/posts/{pid}")
@@ -59,21 +56,19 @@ public class PostController extends MasterController {
     }
 
     // News Feed
-//    @GetMapping("/news-feed") // TODO ? infinite scroll is correct
-//    public List<PostDTO> showNewsFeed(HttpServletRequest req,
-//                                      @RequestParam("days_min") int daysMin, // TODO ? ??? List<PostDTO>
-//                                      @RequestParam("days_max") int daysMax) {
-//        return postService.showNewsFeed(userController.getUserId(req), daysMin, daysMax);
-//    }
+    @GetMapping
+    public List<PostFilterDTO> showNewsFeed(HttpSession session,
+                                      @RequestParam int pageNumber,
+                                      @RequestParam int rowsNumber) {
+        return postService.showNewsFeed(getUserId(session), pageNumber, rowsNumber);
+    }
 
     // Profile Page
-//    @GetMapping("/users/{uid}/posts") // TODO ? infinite scroll is correct ??? List<PostDTO>
-//    public List<PostDTO> showPostsOfUser(@PathVariable int uid,
-//                                         @RequestParam("days_min") int daysMin,
-//                                         @RequestParam("days_max") int daysMax,
-//                                         @RequestParam("order_by") String orderBy) {
-//        return postService.showPostsOfUser(uid, daysMin, daysMax, orderBy);
-//    }
+    @GetMapping(value = "/users/{uid}/posts")
+    public List<PostFilterDTO> getAllPostsOfUser(@PathVariable int uid,
+                                           @RequestParam int pageNumber, @RequestParam int rowsNumber){
+        return postService.getPostsOfUser(uid, pageNumber, rowsNumber);
+    }
 
     @PutMapping("/posts/{pid}/react")
     public LikesDislikesDTO reactTo(@PathVariable int pid, @RequestParam("reaction") String reaction, HttpSession session) {

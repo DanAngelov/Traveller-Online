@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 @Getter
@@ -14,5 +15,7 @@ public class PostFilterDTO implements Serializable {
     private String category;
     private String title;
     private String userFullName;
+    private double locationLatitude;
+    private double locationLongitude;
 
 }

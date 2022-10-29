@@ -1,6 +1,16 @@
 package com.example.travelleronline;
 
+import com.example.travelleronline.comments.Comment;
+import com.example.travelleronline.comments.dtos.CommentDTO;
+import com.example.travelleronline.posts.Post;
+import com.example.travelleronline.posts.dtos.PostDTO;
+import com.example.travelleronline.users.User;
+import com.example.travelleronline.users.dtos.UserProfileDTO;
+import com.example.travelleronline.util.converters.CommentReactionsListToIntegersConverter;
+import com.example.travelleronline.util.converters.PostReactionsListToIntegersConverter;
+import com.example.travelleronline.util.converters.UserSubscribersListToIntegerConverter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -24,7 +34,36 @@ public class TravellerOnlineApplication {
 
     @Bean
     public ModelMapper modelMapper() {
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+
+        modelMapper.typeMap(User.class, UserProfileDTO.class)
+                .addMappings(new PropertyMap<User, UserProfileDTO>() {
+            @Override
+            protected void configure() {
+                using(new UserSubscribersListToIntegerConverter())
+                        .map(source.getSubscribers(), destination.getSubscribers());
+            }
+        });
+
+        modelMapper.typeMap(Post.class, PostDTO.class)
+                .addMappings(new PropertyMap<Post, PostDTO>() {
+                    @Override
+                    protected void configure() {
+                        using(new PostReactionsListToIntegersConverter())
+                                .map(source.getPostReactions(), destination.getReactions());
+                    }
+                });
+
+        modelMapper.typeMap(Comment.class, CommentDTO.class)
+                .addMappings(new PropertyMap<Comment, CommentDTO>() {
+                    @Override
+                    protected void configure() {
+                        using(new CommentReactionsListToIntegersConverter())
+                                .map(source.getCommentReactions(), destination.getReactions());
+                    }
+                }); //TODO for: CommentWithoutParentDTO, CommentWithParentDTO
+
+        return modelMapper;
     }
 
     @Bean
@@ -38,8 +77,8 @@ public class TravellerOnlineApplication {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
 
-        mailSender.setUsername("dan.angelov93@gmail.com");
-        mailSender.setPassword("zlxviuhomqzomawf");
+        mailSender.setUsername("traveller.online.s14@gmail.com");
+        mailSender.setPassword("sanihrzjigngeypg");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

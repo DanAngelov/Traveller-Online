@@ -1,5 +1,6 @@
 package com.example.travelleronline.comments.dtos;
 
+import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserProfileDTO;
 import lombok.Data;
 
@@ -12,5 +13,6 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private String content;
     private UserProfileDTO user;
+    private LikesDislikesDTO reactions;
 
 }

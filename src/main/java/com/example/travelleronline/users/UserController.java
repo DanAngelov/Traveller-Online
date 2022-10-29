@@ -20,13 +20,13 @@ public class UserController extends MasterController {
     // Front-end(originally): Avoid spaces at the beginning and at the end.
     // Front-end(afterwards): A verification email has been sent to: ...
     // ...You have ten days to verify your email.
-    @PostMapping("users/registration")
+    @PostMapping("/users/registration")
     @ResponseStatus(code = HttpStatus.CREATED)
     public UserWithoutPassDTO register(@RequestBody RegisterDTO dto) {
         return userService.register(dto);
     }
 
-    @PutMapping(value = "users/email-verification/{token}")
+    @PutMapping(value = "/users/email-verification/{token}")
     public void verifyEmail(@PathVariable String token) {
         userService.verifyEmail(token);
     }
@@ -38,6 +38,7 @@ public class UserController extends MasterController {
             session.invalidate();
             throw new BadRequestException("The user was already logged in. Session terminated.");
         }
+        session.setMaxInactiveInterval(10*60); // 10 minutes
         UserProfileDTO result = userService.logIn(dto);
         logUser(req, result.getUserId());
         return result;

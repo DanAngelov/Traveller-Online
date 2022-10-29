@@ -16,38 +16,59 @@ public class PostDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    public static final String SQL_TITLE_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-            "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
+    public static final String SQL_TITLE_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE title LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
     public static final String SQL_TITLE_LIKES = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
-            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
             "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND title LIKE ? " +
             "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
-    public static final String SQL_HASHTAG_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-            "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
+    public static final String SQL_HASHTAG_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN post_hashtags AS ph ON (p.post_id = ph.post_id) " +
             "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
-            "WHERE h.`name` LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
-    public static final String SQL_HASHTAG_LIKES = "SELECT p.post_id AS post_id, pc.`name` AS category, p.title AS title, " +
-            "CONCAT(u.first_name, ' ', u.last_name) AS user_full_name " +
+            "WHERE h.`name` = ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
+    public static final String SQL_HASHTAG_LIKES = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN post_hashtags AS ph ON (p.post_id = ph.post_id) " +
             "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
-            "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND h.`name` LIKE ? " +
+            "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND h.`name` = ? " +
             "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
+    private static final String SQL_NEWS_FEED = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
+            "FROM posts AS p " +
+            "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
+            "JOIN users AS u ON (p.user_id = u.user_id) " +
+            "JOIN subscribers AS s ON (u.user_id = s.sub_id) " +
+            "WHERE s.sub_id = ? " +
+            "ORDER BY p.date_of_upload LIMIT ?, ?;";
+    private static final String SQL_PROFILE_PAGE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+            "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
+            "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
+            "FROM posts AS p " +
+            "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
+            "JOIN users AS u ON (p.user_id = u.user_id) " +
+            "WHERE u.user_id = ? " +
+            "ORDER BY p.date_of_upload LIMIT ?, ?;";
 
     public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
                                            int pageNumber, int rowsNumber) {
@@ -59,6 +80,8 @@ public class PostDAO {
                     case "likes" -> sql = SQL_TITLE_LIKES;
                     default -> throw new BadRequestException("Unknown value or parameter \"orderBy\".");
                 }
+                StringBuilder builder = new StringBuilder();
+                value = builder.append("%").append(value).append("%").toString();
             }
             case "hashtag" -> {
                 switch (orderBy) {
@@ -69,8 +92,7 @@ public class PostDAO {
             }
             default -> throw new BadRequestException("Unknown value or parameter \"searchBy\".");
         }
-        StringBuilder builder = new StringBuilder();
-        String searchValue = builder.append("%").append(value).append("%").toString();
+        String searchValue = value; // TODO ? not needed
         int skipsNumber = pageNumber * rowsNumber;
         return jdbcTemplate.query(sql,
                 new PreparedStatementSetter() {
@@ -84,7 +106,47 @@ public class PostDAO {
                         rs.getInt("post_id"),
                         rs.getString("category"),
                         rs.getString("title"),
-                        rs.getString("user_full_name")));
+                        rs.getString("user_full_name"),
+                        rs.getDouble("location_latitude"),
+                        rs.getDouble("location_longitude")));
     }
 
+
+    public List<PostFilterDTO> showNewsFeed(int uid, int pageNumber, int rowsNumber) {
+        int skipsNumber = pageNumber * rowsNumber;
+        return jdbcTemplate.query(SQL_NEWS_FEED,
+                new PreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps) throws SQLException {
+                        ps.setInt(1, uid);
+                        ps.setInt(2, skipsNumber);
+                        ps.setInt(3, rowsNumber);
+                    }
+                }, (rs, rowNum) -> new PostFilterDTO(
+                        rs.getInt("post_id"),
+                        rs.getString("category"),
+                        rs.getString("title"),
+                        rs.getString("user_full_name"),
+                        rs.getDouble("location_latitude"),
+                        rs.getDouble("location_longitude")));
+    }
+
+    public List<PostFilterDTO> getPostsOfUser(int uid, int pageNumber, int rowsNumber) {
+        int skipsNumber = pageNumber * rowsNumber;
+        return jdbcTemplate.query(SQL_PROFILE_PAGE,
+                new PreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps) throws SQLException {
+                        ps.setInt(1, uid);
+                        ps.setInt(2, skipsNumber);
+                        ps.setInt(3, rowsNumber);
+                    }
+                }, (rs, rowNum) -> new PostFilterDTO(
+                        rs.getInt("post_id"),
+                        rs.getString("category"),
+                        rs.getString("title"),
+                        rs.getString("user_full_name"),
+                        rs.getDouble("location_latitude"),
+                        rs.getDouble("location_longitude")));
+    }
 }

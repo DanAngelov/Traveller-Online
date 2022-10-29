@@ -9,7 +9,7 @@ public class EditInfoDTO {
 
     private String firstName;
     private String lastName;
-    private String phone;
+    private String phoneNumber;
     private LocalDate dateOfBirth;
     private char gender;
 

@@ -140,33 +140,33 @@ public class CommentService extends MasterService {
             }
         }
         LikesDislikesDTO dto = new LikesDislikesDTO();
-        dto.setLikes(comment.getCommentReactions().stream()
+        int likes = comment.getCommentReactions().stream()
                 .filter(pr -> pr.isLike())
                 .collect(Collectors.toList())
-                .size());
-        dto.setDislikes(comment.getCommentReactions().stream()
-                .filter(pr -> !pr.isLike())
-                .collect(Collectors.toList())
-                .size()); // TODO ? can be refactored or not
+                .size();
+        dto.setLikes(likes);
+        int dislikes = comment.getCommentReactions().size() - likes;
+        dto.setDislikes(dislikes);
         return dto;
-    } //TODO this method seems too large and maybe should be a transaction ?
+    }
 
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {
         Comment comment = getCommentById(cid);
-        if (reaction.equals("like")) {
-            return comment.getCommentReactions().stream()
-                    .filter(cr -> cr.isLike())
-                    .map(cr -> modelMapper.map(cr.getUser(), UserIdNamesPhotoDTO.class))
-                    .collect(Collectors.toList());
+        switch (reaction) {
+            case "like" -> {
+                return comment.getCommentReactions().stream()
+                        .filter(cr -> cr.isLike())
+                        .map(cr -> modelMapper.map(cr.getUser(), UserIdNamesPhotoDTO.class))
+                        .collect(Collectors.toList());
+            }
+            case "dislike" -> {
+                return comment.getCommentReactions().stream()
+                        .filter(cr -> !cr.isLike())
+                        .map(cr -> modelMapper.map(cr.getUser(), UserIdNamesPhotoDTO.class))
+                        .collect(Collectors.toList());
+            }
+            default -> throw new BadRequestException("Unknown value for parameter \"reaction\".");
         }
-        else if (reaction.equals("dislike")) {
-            return comment.getCommentReactions().stream()
-                    .filter(cr -> !cr.isLike())
-                    .map(cr -> modelMapper.map(cr.getUser(), UserIdNamesPhotoDTO.class))
-                    .collect(Collectors.toList());
-        }
-        else {
-            throw new BadRequestException("Unknown value for parameter \"reaction\".");
-        }//TODO use switch instead ?
     }
+
 }
