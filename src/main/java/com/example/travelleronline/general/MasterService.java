@@ -19,6 +19,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+
 @Service
 public abstract class MasterService {
     @Autowired
@@ -39,7 +41,8 @@ public abstract class MasterService {
     protected PostReactionRepository postReactRepo;
     @Autowired
     protected CommentReactionRepository commentReactRepo;
-    protected static final String DEF_PROFILE_IMAGE_URI = "/uploads/def_profile_image.png";
+    protected static final String DEF_PROFILE_IMAGE_URI = "uploads" + File.separator +
+            "def_profile_image.png";
 
     protected User getVerifiedUserById(int uid) {
         User user = userRepository.findById(uid)

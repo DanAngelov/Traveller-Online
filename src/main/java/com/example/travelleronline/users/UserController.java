@@ -26,9 +26,9 @@ public class UserController extends MasterController {
         return userService.register(dto);
     }
 
-    @PutMapping(value = "/users/email-verification/{token}")
-    public void verifyEmail(@PathVariable String token) {
-        userService.verifyEmail(token);
+    @GetMapping(value = "/users/email-verification/{token}")
+    public String verifyEmail(@PathVariable String token) {
+        return userService.verifyEmail(token);
     }
 
     @PostMapping("/users/login")

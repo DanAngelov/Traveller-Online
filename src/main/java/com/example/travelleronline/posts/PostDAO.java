@@ -58,9 +58,9 @@ public class PostDAO {
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
-            "JOIN subscribers AS s ON (u.user_id = s.sub_id) " +
+            "JOIN subscribers AS s ON (u.user_id = s.user_id) " +
             "WHERE s.sub_id = ? " +
-            "ORDER BY p.date_of_upload LIMIT ?, ?;";
+            "ORDER BY p.date_of_upload DESC LIMIT ?, ?;";
     private static final String SQL_PROFILE_PAGE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -68,7 +68,7 @@ public class PostDAO {
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE u.user_id = ? " +
-            "ORDER BY p.date_of_upload LIMIT ?, ?;";
+            "ORDER BY p.date_of_upload DESC LIMIT ?, ?;";
 
     public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
                                            int pageNumber, int rowsNumber) {
@@ -81,6 +81,7 @@ public class PostDAO {
                     default -> throw new BadRequestException("Unknown value or parameter \"orderBy\".");
                 }
                 StringBuilder builder = new StringBuilder();
+                value = value.replace("_", " ");
                 value = builder.append("%").append(value).append("%").toString();
             }
             case "hashtag" -> {
@@ -92,7 +93,7 @@ public class PostDAO {
             }
             default -> throw new BadRequestException("Unknown value or parameter \"searchBy\".");
         }
-        String searchValue = value; // TODO ? not needed
+        String searchValue = value;
         int skipsNumber = pageNumber * rowsNumber;
         return jdbcTemplate.query(sql,
                 new PreparedStatementSetter() {

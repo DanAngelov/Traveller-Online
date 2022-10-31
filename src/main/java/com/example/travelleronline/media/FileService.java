@@ -49,7 +49,7 @@ public class FileService extends MasterService {
     private Post validatePost(int pid, int uid) {
         Post post = getPostById(pid);
         if(post.getOwner().getUserId() != uid) {
-            throw new NotFoundException("Post not found.");
+            throw new BadRequestException("You are not the post owner.");
         }
         return post;
     }

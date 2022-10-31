@@ -50,7 +50,7 @@ public class UserService extends MasterService {
         String email = dto.getEmail().trim();
         validateEmail(email);
         String phoneNumber = dto.getPhoneNumber();
-        validatePhone(phoneNumber);
+        validatePhoneNumber(phoneNumber);
         validatePassword(password);
         validateDateOfBirth(dto.getDateOfBirth());
         validateGender(dto.getGender());
@@ -69,12 +69,12 @@ public class UserService extends MasterService {
         user.setVerified(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
-        sendVerificationEmail(email, user.getUserId());
         userRepository.save(user);
+        sendVerificationEmail(email, user.getUserId());
         return modelMapper.map(user, UserWithoutPassDTO.class);
     }
 
-    void verifyEmail(String token) {
+    String verifyEmail(String token) {
         int uid = TokenCoder.decode(token);
         if (uid == 0) {
             throw new BadRequestException("URL is wrong. Token not correct.");
@@ -86,6 +86,7 @@ public class UserService extends MasterService {
         }
         user.setVerified(true);
         userRepository.save(user);
+        return "Your account is now verified.";
     }
 
     UserProfileDTO logIn(LoginDTO dto) {
@@ -248,14 +249,16 @@ public class UserService extends MasterService {
 
     private void sendVerificationEmail(String email, int uid) {
         String token = TokenCoder.encode(uid);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("noreply@traveller-online.bg");
-        message.setTo(email);
-        message.setSubject("Your Traveller-Online Account - Verify Your Email Address");
-        message.setText("Please, follow the link bellow in order to verify your email address:\n" +
-                "http://localhost:7000/users/email-verification/" + token);
-        //http://traveller-online.bg/app/verify-email/...
-        emailSender.send(message);
+        new Thread(() -> {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("noreply@traveller-online.bg");
+            message.setTo(email);
+            message.setSubject("Your Traveller-Online Account - Verify Your Email Address");
+            message.setText("Please, follow the link bellow in order to verify your email address:\n" +
+                    "http://localhost:7000/users/email-verification/" + token);
+            //http://traveller-online.bg/app/verify-email/...
+            emailSender.send(message);
+        }).start();
     }
 
     // user's info and password validations
@@ -272,8 +275,8 @@ public class UserService extends MasterService {
         }
     }
 
-    private void validatePhone(String phone) {
-        if (!phone.matches("^\\+(?:[0-9] ?){6,14}[0-9]$")) {
+    private void validatePhoneNumber(String phoneNumber) {
+        if (!phoneNumber.matches("^\\+(?:[0-9] ?){6,14}[0-9]$")) {
             throw new BadRequestException("Invalid phone number.");
         }
     }
