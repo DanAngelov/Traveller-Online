@@ -16,6 +16,7 @@ public class PostDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
     public static final String SQL_TITLE_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -23,6 +24,7 @@ public class PostDAO {
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE title LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
+
     public static final String SQL_TITLE_LIKES = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -32,6 +34,7 @@ public class PostDAO {
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
             "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND title LIKE ? " +
             "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
+
     public static final String SQL_HASHTAG_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -41,6 +44,7 @@ public class PostDAO {
             "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE h.`name` = ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
+
     public static final String SQL_HASHTAG_LIKES = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -52,6 +56,7 @@ public class PostDAO {
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
             "WHERE (pr.is_like = '1' OR pr.is_like IS NULL) AND h.`name` = ? " +
             "GROUP BY p.post_id ORDER BY COUNT(*) DESC LIMIT ?, ?";
+
     private static final String SQL_NEWS_FEED = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -61,6 +66,7 @@ public class PostDAO {
             "JOIN subscribers AS s ON (u.user_id = s.user_id) " +
             "WHERE s.sub_id = ? " +
             "ORDER BY p.date_of_upload DESC LIMIT ?, ?;";
+
     private static final String SQL_PROFILE_PAGE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
