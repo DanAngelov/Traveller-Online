@@ -2,7 +2,6 @@ package com.example.travelleronline.general.util.converters;
 
 import com.example.travelleronline.reactions.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toComment.CommentReaction;
-import com.example.travelleronline.reactions.toPost.PostReaction;
 import org.modelmapper.AbstractConverter;
 
 import java.util.List;

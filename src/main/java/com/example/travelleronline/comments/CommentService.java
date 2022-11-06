@@ -3,7 +3,6 @@ package com.example.travelleronline.comments;
 import com.example.travelleronline.comments.dtos.CommentRequestDTO;
 import com.example.travelleronline.comments.dtos.CommentWithParentDTO;
 import com.example.travelleronline.general.exceptions.BadRequestException;
-import com.example.travelleronline.general.exceptions.NotFoundException;
 import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.reactions.LikesDislikesDTO;
@@ -20,8 +19,10 @@ import java.util.stream.Collectors;
 @Service
 public class CommentService extends MasterService {
 
+    public static final int COMMENT_CONTENT_LENGTH_MIN = 5;
+    public static final int COMMENT_CONTENT_LENGTH_MAX = 500;
+
     public CommentWithParentDTO createComment(int pid, CommentRequestDTO dto, int uid) {
-        validatePost(pid);
         validateCommentContent(dto);
         Post p = getPostById(pid);
         User u = getVerifiedUserById(uid);
@@ -34,17 +35,16 @@ public class CommentService extends MasterService {
         return modelMapper.map(c, CommentWithParentDTO.class);
     }
 
-    public void editComment(int cid, CommentRequestDTO dto,int uid) {
+    public void editComment(int cid, CommentRequestDTO dto, int uid) {
         Comment existingComment = getCommentById(cid);
-        validateOwnerOfComment(uid, cid);
+        validateOwnerOfComment(uid, existingComment);
         validateCommentContent(dto);
         existingComment.setContent(dto.getContent());
         commentRepository.save(existingComment);
     }
 
-    private void validateOwnerOfComment(int uid, int cid) {
-        Comment c = getCommentById(cid);
-        if(c.getUser().getUserId() != uid) {
+    private void validateOwnerOfComment(int uid, Comment comment) {
+        if(comment.getUser().getUserId() != uid) {
             throw new UnauthorizedException("Only the owner of the comment can edit the comment.");
         }
     }
@@ -52,41 +52,27 @@ public class CommentService extends MasterService {
     public void deleteComment(int cid, int uid) {
         Comment comment = getCommentById(cid);
         Post post = comment.getPost();
-        if(validateDeletionOfComment(post, comment, uid)) {
+        if(comment.getUser().getUserId() == uid || post.getOwner().getUserId() == uid) {
             commentRepository.deleteById(cid);
         }
         else {
-            throw new BadRequestException("You must be post owner or comment owner to delete this comment.");
+            throw new BadRequestException("You must be post owner or the comment owner to delete this comment.");
         }
-    }
-
-    private boolean validateDeletionOfComment(Post p, Comment c, int uid) {
-        User sessionUser = getVerifiedUserById(uid);
-        User postOwner = p.getOwner();
-        User commentOwner = c.getUser();
-        if (sessionUser.equals(commentOwner) || sessionUser.equals(postOwner)) {
-            return true;
-        }
-        return false;
     }
 
     public void deleteAllComments(int pid, int uid) {
-        Post p = getPostById(pid);
-        User postOwner = p.getOwner();
-        User sessionUser = getVerifiedUserById(uid);
-        if(!sessionUser.equals(postOwner)) {
+        Post post = getPostById(pid);
+        if(post.getOwner().getUserId() != uid) {
             throw new UnauthorizedException("You must be the post owner to delete all comments.");
         }
         commentRepository.deleteAll();
     }
 
-    private void validatePost(int pid) {
-        postRepository.findById(pid).orElseThrow(() -> new NotFoundException("Post not found."));
-    }
-
     private void validateCommentContent(CommentRequestDTO dto) {
-        if (dto.getContent().length() < 5 || dto.getContent().length() > 500) {
-            throw new BadRequestException("Comment size must be between 5 and 500 letters.");
+        if (dto.getContent().length() < COMMENT_CONTENT_LENGTH_MIN ||
+            dto.getContent().length() > COMMENT_CONTENT_LENGTH_MAX) {
+            throw new BadRequestException("Comment size must be between " + COMMENT_CONTENT_LENGTH_MIN +
+                    " and " + COMMENT_CONTENT_LENGTH_MAX + " letters.");
         }
     }
 
@@ -110,15 +96,27 @@ public class CommentService extends MasterService {
         CommentReaction commentReaction = new CommentReaction();
         commentReaction.setUser(user);
         commentReaction.setComment(comment);
-        if (reaction.equals("like")) {
-            commentReaction.setLike(true);
+        switch (reaction) {
+            case "like" -> commentReaction.setLike(true);
+            case "dislike" -> commentReaction.setLike(false);
+            default -> throw new BadRequestException("Unknown value for parameter \"reaction\".");
         }
-        else if (reaction.equals("dislike")) {
-            commentReaction.setLike(false);
-        }
-        else {
-            throw new BadRequestException("Unknown value for parameter \"reaction\".");
-        }
+        updateCommentReaction(user, comment, commentReaction);
+        return getLikesAndDislikes(comment);
+    }
+
+    private LikesDislikesDTO getLikesAndDislikes(Comment comment) {
+        LikesDislikesDTO dto = new LikesDislikesDTO();
+        int likes = comment.getCommentReactions().stream()
+                .filter(pr -> pr.isLike()).toList()
+                .size();
+        dto.setLikes(likes);
+        int dislikes = comment.getCommentReactions().size() - likes;
+        dto.setDislikes(dislikes);
+        return dto;
+    }
+
+    private void updateCommentReaction(User user, Comment comment, CommentReaction commentReaction) {
         List<CommentReaction> reactionsSameCommentAndUser =
                 commentReactRepo.findAllByUserAndComment(user, comment);
         if (reactionsSameCommentAndUser.size() == 0) {
@@ -131,15 +129,6 @@ public class CommentService extends MasterService {
                 commentReactRepo.save(commentReaction);
             }
         }
-        LikesDislikesDTO dto = new LikesDislikesDTO();
-        int likes = comment.getCommentReactions().stream()
-                .filter(pr -> pr.isLike())
-                .collect(Collectors.toList())
-                .size();
-        dto.setLikes(likes);
-        int dislikes = comment.getCommentReactions().size() - likes;
-        dto.setDislikes(dislikes);
-        return dto;
     }
 
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {

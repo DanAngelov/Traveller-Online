@@ -41,7 +41,6 @@ public class User {
     private LocalDateTime lastLoginAt;
     @Column
     private boolean isVerified;
-
     @ManyToMany
     @JoinTable(
         name = "subscribers",
@@ -49,16 +48,12 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "sub_id", nullable = false)
     )
     List<User> subscribers;
-
     @ManyToMany(mappedBy = "subscribers")
     List<User> subscriptions;
-
     @OneToMany(mappedBy = "owner")
     private List<Post> posts;
-
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
-
     @ManyToMany
     @JoinTable(
             name = "taggedInPosts",
@@ -66,10 +61,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "post_id", nullable = false)
     )
     private List<Post> taggedInPosts;
-
     @OneToMany(mappedBy = "user")
     List<PostReaction> postReactions;
-
     @OneToMany(mappedBy = "user")
     List<CommentReaction> commentReactions;
 

@@ -61,9 +61,8 @@ public class PostService extends MasterService {
     }
 
     private void validateDeletionOfPost(int pid, int uid) {
-        Post p = getPostById(pid);
-        User postOwner = p.getOwner();
-        if (postOwner.getUserId() != uid) {
+        Post post = getPostById(pid);
+        if (post.getOwner().getUserId() != uid) {
             throw new UnauthorizedException("You must be the post owner to delete this post.");
         }
     }
@@ -98,10 +97,10 @@ public class PostService extends MasterService {
         }
     }
 
-    private Category validateCategory(String category) {
-        Category c = categoryRepository.findByName(category);
-        if (c != null) {
-            return c;
+    private Category validateCategory(String categoryName) {
+        Category category = categoryRepository.findByName(categoryName);
+        if (category != null) {
+            return category;
         }
         throw new BadRequestException("No such category.");
     }
@@ -153,20 +152,31 @@ public class PostService extends MasterService {
 
     public LikesDislikesDTO reactTo(int uid, int pid, String reaction) {
         User user = getVerifiedUserById(uid);
-        Post post = postRepository.findById(pid)
-                .orElseThrow(() -> new NotFoundException("Post not found"));
+        Post post = getPostById(pid);
         PostReaction postReaction = new PostReaction();
         postReaction.setUser(user);
         postReaction.setPost(post);
-        if (reaction.equals("like")) {
-            postReaction.setLike(true);
+        switch (reaction) {
+            case "like" -> postReaction.setLike(true);
+            case "dislike" -> postReaction.setLike(false);
+            default -> throw new BadRequestException("Unknown value for parameter \"reaction\".");
         }
-        else if (reaction.equals("dislike")) {
-            postReaction.setLike(false);
-        }
-        else {
-            throw new BadRequestException("Unknown value for parameter \"reaction\".");
-        }
+        updatePostReaction(user, post, postReaction);
+        return getLikesAndDislikes(post);
+    }
+
+    private LikesDislikesDTO getLikesAndDislikes(Post post) {
+        LikesDislikesDTO dto = new LikesDislikesDTO();
+        int likes = post.getPostReactions().stream()
+                .filter(pr -> pr.isLike()).toList()
+                .size();
+        dto.setLikes(likes);
+        int dislikes = post.getPostReactions().size() - likes;
+        dto.setDislikes(dislikes);
+        return dto;
+    }
+
+    private void updatePostReaction(User user, Post post, PostReaction postReaction) {
         List<PostReaction> reactionsSamePostAndUser = postReactRepo.findAllByUserAndPost(user, post);
         if (reactionsSamePostAndUser.size() == 0) {
             postReactRepo.save(postReaction);
@@ -178,15 +188,6 @@ public class PostService extends MasterService {
                 postReactRepo.save(postReaction);
             }
         }
-        LikesDislikesDTO dto = new LikesDislikesDTO();
-        int likes = post.getPostReactions().stream()
-                .filter(pr -> pr.isLike())
-                .collect(Collectors.toList())
-                .size();
-        dto.setLikes(likes);
-        int dislikes = post.getPostReactions().size() - likes;
-        dto.setDislikes(dislikes);
-        return dto;
     }
 
     public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int pid, String reaction) {

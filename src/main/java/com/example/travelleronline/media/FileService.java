@@ -55,12 +55,16 @@ public class FileService extends MasterService {
     }
 
     private void validateImage(MultipartFile image) {
+        if (image == null) {
+            throw new BadRequestException("Video not uploaded.");
+        }
         if (image.getContentType().equals("image/jpeg") || image.getContentType().equals("image/jpg")
         || image.getContentType().equals("image/png")) {
             return;
         }
         throw new BadRequestException("File type needs to be jpg,jpeg or png.");
     };
+
     private void validateVideo(MultipartFile video){
         if (video == null) {
             throw new BadRequestException("Video not uploaded.");
@@ -73,8 +77,8 @@ public class FileService extends MasterService {
     };
 
     public void uploadPostVideo(int pid, MultipartFile file, int uid) {
-        validateVideo(file);
         Post post = validatePost(pid, uid);
+        validateVideo(file);
         if(post.getClipUri() != null) {
             deleteOldFile(post.getClipUri());
         }

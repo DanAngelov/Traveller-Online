@@ -16,14 +16,16 @@ public class PostDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    public static final String SQL_TITLE_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+
+    private static final String SQL_TITLE_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
             "JOIN post_categories AS pc ON (p.category_id = pc.category_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE title LIKE ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
-    public static final String SQL_TITLE_LIKES = "SELECT post_id, category, title, user_full_name FROM " +
+
+    private static final String SQL_TITLE_LIKES = "SELECT post_id, category, title, user_full_name FROM " +
             "(SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "(pr.is_like * COUNT(*)) AS likes_number " +
@@ -33,7 +35,8 @@ public class PostDAO {
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
             "WHERE title LIKE ? GROUP BY p.post_id, pr.is_like) intermediate_results " +
             "GROUP BY post_id ORDER BY SUM(likes_number) DESC LIMIT ?, ?";
-    public static final String SQL_HASHTAG_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
+
+    private static final String SQL_HASHTAG_DATE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
             "FROM posts AS p " +
@@ -42,7 +45,8 @@ public class PostDAO {
             "JOIN hashtags AS h ON (ph.hashtag_id = h.hashtag_id) " +
             "JOIN users AS u ON (p.user_id = u.user_id) " +
             "WHERE h.`name` = ? ORDER BY p.date_of_upload DESC LIMIT ?, ?";
-    public static final String SQL_HASHTAG_LIKES = "SELECT post_id, category, title, user_full_name FROM " +
+
+    private static final String SQL_HASHTAG_LIKES = "SELECT post_id, category, title, user_full_name FROM " +
             "(SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "(pr.is_like * COUNT(*)) AS likes_number " +
@@ -54,6 +58,7 @@ public class PostDAO {
             "LEFT JOIN post_reactions AS pr ON (pr.post_id = p.post_id) " +
             "WHERE h.`name` = ? GROUP BY p.post_id, pr.is_like) intermediate_results " +
             "GROUP BY post_id ORDER BY SUM(likes_number) DESC LIMIT ?, ?";
+
     private static final String SQL_NEWS_FEED = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
@@ -63,6 +68,7 @@ public class PostDAO {
             "JOIN subscribers AS s ON (u.user_id = s.user_id) " +
             "WHERE s.sub_id = ? " +
             "ORDER BY p.date_of_upload DESC LIMIT ?, ?";
+
     private static final String SQL_PROFILE_PAGE = "SELECT p.post_id AS post_id, pc.`name` AS category, " +
             "p.title AS title, CONCAT(u.first_name, ' ', u.last_name) AS user_full_name, " +
             "p.location_latitude AS location_latitude, p.location_longitude AS location_longitude " +
