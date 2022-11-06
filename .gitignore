@@ -34,3 +34,5 @@ build/
 
 ### Other ###
 uploads/
+**/application-error.log
+**/application-info.log
