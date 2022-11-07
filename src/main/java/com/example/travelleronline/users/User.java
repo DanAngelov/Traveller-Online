@@ -44,8 +44,8 @@ public class User {
     @ManyToMany
     @JoinTable(
         name = "subscribers",
-        joinColumns = @JoinColumn(name = "user_id", nullable = false),
-        inverseJoinColumns = @JoinColumn(name = "sub_id", nullable = false)
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "sub_id")
     )
     List<User> subscribers;
     @ManyToMany(mappedBy = "subscribers")
@@ -57,8 +57,8 @@ public class User {
     @ManyToMany
     @JoinTable(
             name = "taggedInPosts",
-            joinColumns = @JoinColumn(name = "user_id", nullable = false),
-            inverseJoinColumns = @JoinColumn(name = "post_id", nullable = false)
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
     )
     private List<Post> taggedInPosts;
     @OneToMany(mappedBy = "user")

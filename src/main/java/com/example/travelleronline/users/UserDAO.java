@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 @Component
@@ -23,13 +21,12 @@ public class UserDAO {
             "date_of_birth AS CURDATE(), gender AS 'n', user_photo_uri AS ' ' " +
             "WHERE TIMESTAMPDIFF(DAY,NOW(),last_login_at) > 180";
 
-    @SneakyThrows
-    public void deleteUsersNotLoggedInSoon() {
-        List<String> uriForDelete = jdbcTemplate
+    List<String> imagesOfUsersNotLoggedInSoon() {
+        return jdbcTemplate
                 .query(SQL_GET_DELETED_USERS_PHOTOS, (rs, rowNum) -> rs.getString("uri"));
-        for (String uri : uriForDelete) {
-            Files.delete(Path.of(uri));
-        }
+    }
+
+    void deleteUsersNotLoggedInSoon() {
         jdbcTemplate.update(SQL_SOFTLY_DELETE_USERS);
     }
 

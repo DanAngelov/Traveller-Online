@@ -1,6 +1,6 @@
 package com.example.travelleronline.comments.dtos;
 
-import com.example.travelleronline.reactions.LikesDislikesDTO;
+import com.example.travelleronline.reactions.dto.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import lombok.Data;
 

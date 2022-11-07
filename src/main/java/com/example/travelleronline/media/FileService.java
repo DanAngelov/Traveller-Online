@@ -1,7 +1,6 @@
 package com.example.travelleronline.media;
 
 import com.example.travelleronline.general.exceptions.BadRequestException;
-import com.example.travelleronline.general.exceptions.NotFoundException;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.general.MasterService;
@@ -20,38 +19,30 @@ import java.util.List;
 @Service
 public class FileService extends MasterService {
 
-    @Transactional
-    public void uploadImage(int pid, MultipartFile file, int uid) {
-        Post post = validatePost(pid, uid);
-        validateImage(file);
+    public static final int MAX_NUMBERS_POST_IMAGES = 3;
+
+    @SneakyThrows
+    void uploadPostImage(int pid, MultipartFile image, int uid) {
+        Post post = validatePostOwner(pid, uid);
+        validateImage(image);
         List<PostImage> postImages = post.getPostImages();
-        if (postImages.size() > 2) {
-            throw new BadRequestException("You can have a maximum of 3 images per post.");
+        if (postImages.size() == MAX_NUMBERS_POST_IMAGES) {
+            throw new BadRequestException("You can have a maximum of " + MAX_NUMBERS_POST_IMAGES +
+                    " images per post.");
         }
-        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
-        File f = new File(name);
-        try {
-            Files.copy(file.getInputStream(), f.toPath());
-        }
-        catch (IOException e) {
-            throw new BadRequestException("File already exists.");
-        }
-        PostImage image = new PostImage();
-        image.setImageUri(name);
-        image.setPost(post);
-        postImages.add(image);
-        post.setPostImages(postImages);
-        postImageRepository.save(image);
-        postRepository.save(post);
+        String uri = saveFile(image);
+        PostImage postImage = new PostImage();
+        postImage.setImageUri(uri);
+        postImage.setPost(post);
+        postImageRepository.save(postImage);
     }
 
-    private Post validatePost(int pid, int uid) {
-        Post post = getPostById(pid);
-        if(post.getOwner().getUserId() != uid) {
-            throw new BadRequestException("You are not the post owner.");
-        }
-        return post;
+    private String saveFile(MultipartFile file) throws IOException {
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String uri = "uploads" + File.separator + System.nanoTime() + "." + extension;
+        File f = new File(uri);
+        Files.copy(file.getInputStream(), f.toPath());
+        return uri;
     }
 
     private void validateImage(MultipartFile image) {
@@ -76,63 +67,46 @@ public class FileService extends MasterService {
         throw new BadRequestException("File type needs to be mp4 or avi.");
     };
 
-    public void uploadPostVideo(int pid, MultipartFile file, int uid) {
-        Post post = validatePost(pid, uid);
-        validateVideo(file);
+    @SneakyThrows
+    void uploadPostVideo(int pid, MultipartFile video, int uid) {
+        Post post = validatePostOwner(pid, uid);
+        validateVideo(video);
         if(post.getClipUri() != null) {
             deleteOldFile(post.getClipUri());
         }
-        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
-        File f = new File(name);
-        try {
-            Files.copy(file.getInputStream(), f.toPath());
-        }
-        catch (IOException e) {
-            throw new BadRequestException("File already exists.");
-        }
-        post.setClipUri(name);
+        String uri = saveFile(video);
+        post.setClipUri(uri);
         postRepository.save(post);
     }
 
-    public void changeProfileImage(int uid, MultipartFile file) {
+    @SneakyThrows
+    void changeProfileImage(int uid, MultipartFile image) {
         User user = getVerifiedUserById(uid);
         String oldImageURI = user.getUserPhotoUri();
-        if (file == null) {
-            if (!oldImageURI.equals(DEF_PROFILE_IMAGE_URI)) {
-                deleteOldFile(oldImageURI);
-            }
-            user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
-            return;
-        }
-        validateImage(file);
         if(oldImageURI != null && !oldImageURI.equals(DEF_PROFILE_IMAGE_URI)) {
             deleteOldFile(user.getUserPhotoUri());
         }
-        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String name = "uploads" + File.separator + System.nanoTime() + "." + extension;
-        File f = new File(name);
-        try {
-            Files.copy(file.getInputStream(), f.toPath());
+        if (image == null) {
+            user.setUserPhotoUri(DEF_PROFILE_IMAGE_URI);
+            return;
         }
-        catch (IOException e) {
-            throw new BadRequestException("File already exists.");
-        }
-        user.setUserPhotoUri(name);
+        validateImage(image);
+        String uri = saveFile(image);
+        user.setUserPhotoUri(uri);
         userRepository.save(user);
     }
 
     @Transactional
-    public void deleteAllPostImages(int pid, int uid) {
-        Post post = validatePost(pid,uid);
+    void deleteAllPostImages(int pid, int uid) {
+        Post post = validatePostOwner(pid,uid);
         for (PostImage image : post.getPostImages()) {
             deleteOldFile(image.getImageUri());
         }
         postImageRepository.deleteAllByPost(post);
     }
 
-    public void deletePostVideo(int pid, int uid) {
-        Post post = validatePost(pid,uid);
+    void deletePostVideo(int pid, int uid) {
+        Post post = validatePostOwner(pid,uid);
         deleteOldFile(post.getClipUri());
         post.setClipUri(null);
         postRepository.save(post);

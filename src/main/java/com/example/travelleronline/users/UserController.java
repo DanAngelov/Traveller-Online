@@ -89,7 +89,7 @@ public class UserController extends MasterController {
 
     @DeleteMapping("/users")
     public void deleteById(HttpSession session) {
-        userService.deleteById(getUserId(session));
+        userService.softlyDeleteById(getUserId(session));
     }
 
     private void logUser(HttpServletRequest req, int uid) {

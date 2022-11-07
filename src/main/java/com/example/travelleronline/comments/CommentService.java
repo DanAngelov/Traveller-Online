@@ -5,7 +5,7 @@ import com.example.travelleronline.comments.dtos.CommentWithParentDTO;
 import com.example.travelleronline.general.exceptions.BadRequestException;
 import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import com.example.travelleronline.posts.Post;
-import com.example.travelleronline.reactions.LikesDislikesDTO;
+import com.example.travelleronline.reactions.dto.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toComment.CommentReaction;
 import com.example.travelleronline.users.User;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 @Service
 public class CommentService extends MasterService {
 
-    public static final int COMMENT_CONTENT_LENGTH_MIN = 5;
-    public static final int COMMENT_CONTENT_LENGTH_MAX = 500;
+    private static final int COMMENT_CONTENT_LENGTH_MIN = 5;
+    private static final int COMMENT_CONTENT_LENGTH_MAX = 500;
 
-    public CommentWithParentDTO createComment(int pid, CommentRequestDTO dto, int uid) {
+    CommentWithParentDTO createComment(int pid, CommentRequestDTO dto, int uid) {
         validateCommentContent(dto);
         Post p = getPostById(pid);
         User u = getVerifiedUserById(uid);
@@ -35,7 +35,7 @@ public class CommentService extends MasterService {
         return modelMapper.map(c, CommentWithParentDTO.class);
     }
 
-    public void editComment(int cid, CommentRequestDTO dto, int uid) {
+    void editComment(int cid, CommentRequestDTO dto, int uid) {
         Comment existingComment = getCommentById(cid);
         validateOwnerOfComment(uid, existingComment);
         validateCommentContent(dto);
@@ -49,21 +49,22 @@ public class CommentService extends MasterService {
         }
     }
 
-    public void deleteComment(int cid, int uid) {
+    void deleteComment(int cid, int uid) {
         Comment comment = getCommentById(cid);
         Post post = comment.getPost();
         if(comment.getUser().getUserId() == uid || post.getOwner().getUserId() == uid) {
             commentRepository.deleteById(cid);
         }
         else {
-            throw new BadRequestException("You must be post owner or the comment owner to delete this comment.");
+            throw new BadRequestException("You must be post's owner or comment's owner " +
+                    "in order to delete this comment.");
         }
     }
 
-    public void deleteAllComments(int pid, int uid) {
+    void deleteAllComments(int pid, int uid) {
         Post post = getPostById(pid);
         if(post.getOwner().getUserId() != uid) {
-            throw new UnauthorizedException("You must be the post owner to delete all comments.");
+            throw new UnauthorizedException("You must be post's owner in order to delete all comments.");
         }
         commentRepository.deleteAll();
     }
@@ -76,7 +77,7 @@ public class CommentService extends MasterService {
         }
     }
 
-    public CommentWithParentDTO respondToComment(int cid, int uid, CommentRequestDTO dto) {
+    CommentWithParentDTO respondToComment(int cid, int uid, CommentRequestDTO dto) {
         Comment c = getCommentById(cid);
         Post p = c.getPost();
         User u = getVerifiedUserById(uid);
@@ -90,7 +91,8 @@ public class CommentService extends MasterService {
         return modelMapper.map(response, CommentWithParentDTO.class);
     }
 
-    public LikesDislikesDTO reactTo(int uid, int cid, String reaction) {
+    // removes old reaction after following visit
+    LikesDislikesDTO reactTo(int uid, int cid, String reaction) {
         User user = getVerifiedUserById(uid);
         Comment comment = getCommentById(cid);
         CommentReaction commentReaction = new CommentReaction();
@@ -131,7 +133,7 @@ public class CommentService extends MasterService {
         }
     }
 
-    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {
+    List<UserIdNamesPhotoDTO> getUsersWhoReacted(int cid, String reaction) {
         Comment comment = getCommentById(cid);
         switch (reaction) {
             case "like" -> {

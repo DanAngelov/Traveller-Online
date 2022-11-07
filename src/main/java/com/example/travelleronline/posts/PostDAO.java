@@ -78,7 +78,7 @@ public class PostDAO {
             "WHERE u.user_id = ? " +
             "ORDER BY p.date_of_upload DESC LIMIT ?, ?";
 
-    public List<PostFilterDTO> filterPosts(String searchBy, String value, String orderBy,
+    List<PostFilterDTO> filterPosts(String searchBy, String searchValue, String orderBy,
                                            int pageNumber, int rowsNumber) {
         String sql = "";
         switch (searchBy) {
@@ -88,9 +88,6 @@ public class PostDAO {
                     case "likes" -> sql = SQL_TITLE_LIKES;
                     default -> throw new BadRequestException("Unknown value or parameter \"orderBy\".");
                 }
-                StringBuilder builder = new StringBuilder();
-                value = value.replace("_", " ");
-                value = builder.append("%").append(value).append("%").toString();
             }
             case "hashtag" -> {
                 switch (orderBy) {
@@ -101,7 +98,6 @@ public class PostDAO {
             }
             default -> throw new BadRequestException("Unknown value or parameter \"searchBy\".");
         }
-        String searchValue = value;
         int skipsNumber = pageNumber * rowsNumber;
         return jdbcTemplate.query(sql,
                 new PreparedStatementSetter() {
@@ -121,9 +117,17 @@ public class PostDAO {
     }
 
 
-    public List<PostFilterDTO> showNewsFeed(int uid, int pageNumber, int rowsNumber) {
+    List<PostFilterDTO> showNewsFeed(int uid, int pageNumber, int rowsNumber) {
+        return getPostsForUserID(SQL_NEWS_FEED, uid, pageNumber, rowsNumber);
+    }
+
+    List<PostFilterDTO> getPostsOfUser(int uid, int pageNumber, int rowsNumber) {
+        return getPostsForUserID(SQL_PROFILE_PAGE, uid, pageNumber, rowsNumber);
+    }
+
+    private List<PostFilterDTO> getPostsForUserID(String sql, int uid, int pageNumber, int rowsNumber) {
         int skipsNumber = pageNumber * rowsNumber;
-        return jdbcTemplate.query(SQL_NEWS_FEED,
+        return jdbcTemplate.query(sql,
                 new PreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps) throws SQLException {
@@ -140,22 +144,4 @@ public class PostDAO {
                         rs.getDouble("location_longitude")));
     }
 
-    public List<PostFilterDTO> getPostsOfUser(int uid, int pageNumber, int rowsNumber) {
-        int skipsNumber = pageNumber * rowsNumber;
-        return jdbcTemplate.query(SQL_PROFILE_PAGE,
-                new PreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps) throws SQLException {
-                        ps.setInt(1, uid);
-                        ps.setInt(2, skipsNumber);
-                        ps.setInt(3, rowsNumber);
-                    }
-                }, (rs, rowNum) -> new PostFilterDTO(
-                        rs.getInt("post_id"),
-                        rs.getString("category"),
-                        rs.getString("title"),
-                        rs.getString("user_full_name"),
-                        rs.getDouble("location_latitude"),
-                        rs.getDouble("location_longitude")));
-    }
 }

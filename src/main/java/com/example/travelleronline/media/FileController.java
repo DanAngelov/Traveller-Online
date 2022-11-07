@@ -14,10 +14,10 @@ public class FileController extends MasterController {
     private FileService fileService;
 
     @PostMapping("/posts/{pid}/image")
-    public void uploadImage(@PathVariable int pid, @RequestParam MultipartFile image,
-                            HttpSession session) {
+    public void uploadPostImage(@PathVariable int pid, @RequestParam MultipartFile image,
+                                HttpSession session) {
         int uid = getUserId(session);
-        fileService.uploadImage(pid, image, uid);
+        fileService.uploadPostImage(pid, image, uid);
     }
 
     @DeleteMapping("/posts/{pid}/images")

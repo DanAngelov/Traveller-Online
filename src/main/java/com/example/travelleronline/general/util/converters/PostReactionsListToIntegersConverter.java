@@ -1,14 +1,14 @@
 package com.example.travelleronline.general.util.converters;
 
-import com.example.travelleronline.reactions.LikesDislikesDTO;
+import com.example.travelleronline.reactions.dto.LikesDislikesDTO;
 import com.example.travelleronline.reactions.toPost.PostReaction;
-import com.example.travelleronline.users.User;
 import org.modelmapper.AbstractConverter;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PostReactionsListToIntegersConverter extends AbstractConverter<List<PostReaction>, LikesDislikesDTO> {
+public class PostReactionsListToIntegersConverter
+        extends AbstractConverter<List<PostReaction>, LikesDislikesDTO> {
 
     @Override
     protected LikesDislikesDTO convert(List<PostReaction> reactions) {

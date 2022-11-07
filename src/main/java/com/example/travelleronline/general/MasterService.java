@@ -71,7 +71,7 @@ public abstract class MasterService {
     protected Post validatePostOwner(int pid, int uid) {
         Post post = getPostById(pid);
         if(post.getOwner().getUserId() != uid) {
-            throw new UnauthorizedException("You are not the post owner");
+            throw new UnauthorizedException("You are not post's owner.");
         }
         return post;
     }

@@ -93,10 +93,6 @@ public class UserService extends MasterService {
         String email = dto.getEmail().trim();
         String password = dto.getPassword().trim();
         List<User> users = userRepository.findAllByEmail(email);
-        if (users.size() > 1) {
-            throw new UnauthorizedException("Problem in the DB - " +
-                    "more than one user with the same email."); // This should never happen.
-        }
         if (users.size() == 0) {
             throw new UnauthorizedException("Invalid email or password.");
         }
@@ -233,7 +229,7 @@ public class UserService extends MasterService {
     }
 
     @SneakyThrows
-    void deleteById(int uid) {
+    void softlyDeleteById(int uid) {
         User user = getVerifiedUserById(uid);
         user.setFirstName(" ");
         user.setLastName(" ");
@@ -331,6 +327,10 @@ public class UserService extends MasterService {
     @SneakyThrows
     @Scheduled(cron = "0 0 0 */180 * *")
     public void softlyDeleteUsersNotLoggedInSoon() {
+        List<String> uriForDelete = dao.imagesOfUsersNotLoggedInSoon();
+        for (String uri : uriForDelete) {
+            Files.delete(Path.of(uri));
+        }
         dao.deleteUsersNotLoggedInSoon();
     }
 

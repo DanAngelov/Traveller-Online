@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class HashtagService extends MasterService {
 
-    public static final int HASHTAG_LENGTH_MIN = 2;
-    public static final int HASHTAG_LENGTH_MAX = 50;
+    private static final int HASHTAG_LENGTH_MIN = 2;
+    private static final int HASHTAG_LENGTH_MAX = 50;
 
     @Transactional
-    public void addHashtagToPost(int pid, HashtagDTO hashtag, int uid) {
+    void addHashtagToPost(int pid, HashtagDTO hashtag, int uid) {
         validateHashtagName(hashtag.getName());
         Post post = validatePostOwner(pid, uid);
         for (Hashtag g : post.getPostHashtags()) {
@@ -32,7 +32,7 @@ public class HashtagService extends MasterService {
         postRepository.save(post);
     }
 
-    public void deleteHashtagFromPost(int pid, HashtagDTO hashtag, int uid) {
+    void deleteHashtagFromPost(int pid, HashtagDTO hashtag, int uid) {
         Post post = validatePostOwner(pid, uid);
         for (Hashtag tag : post.getPostHashtags()) {
             if(tag.getName().equals(hashtag.getName())) {

@@ -31,7 +31,7 @@ public abstract class MasterController {
 
     @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    private ErrorDTO handleNotFound(NotFoundException e){
+    private ErrorDTO handleNotFound(NotFoundException e) {
         return buildErrorInfo(e, HttpStatus.NOT_FOUND);
     }
 
@@ -43,16 +43,22 @@ public abstract class MasterController {
 
     private ErrorDTO buildErrorInfo(Exception e, HttpStatus status) {
         ErrorDTO dto = new ErrorDTO();
-        dto.setStatus(status.value());
+        int statusValue = status.value();
+        dto.setStatus(statusValue);
         dto.setMessage(e.getMessage());
         dto.setTime(LocalDateTime.now());
-        log.error("Error with message={}, stackTrace={}",e.getMessage(),e.getStackTrace());
+        if (statusValue >= 500) {
+            log.error("!!! Error with message={}, stackTrace={}",e.getMessage(),e.getStackTrace());
+        }
+        else {
+            log.error("Error with message={}, stackTrace={}",e.getMessage(),e.getStackTrace());
+        }
         return dto;
     }
 
     protected int getUserId(HttpSession session) {
         if (session.getAttribute(USER_ID) == null) {
-            return 0;
+            throw new NotFoundException("User's ID is not in session."); // This should never happen.
         }
         return (int) session.getAttribute(USER_ID);
     }

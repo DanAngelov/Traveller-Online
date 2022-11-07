@@ -1,4 +1,4 @@
-package com.example.travelleronline.reactions;
+package com.example.travelleronline.reactions.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

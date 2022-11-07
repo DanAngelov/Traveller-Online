@@ -25,10 +25,10 @@ public class Comment {
     @JoinColumn(name = "parent_id")
     private Comment parent;
     @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id")
     private Post post;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
     @OneToMany(mappedBy = "comment")
     private List<CommentReaction> commentReactions;

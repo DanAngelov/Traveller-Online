@@ -3,7 +3,7 @@ package com.example.travelleronline.posts;
 import com.example.travelleronline.posts.dtos.PostEditDTO;
 import com.example.travelleronline.posts.dtos.PostFilterDTO;
 import com.example.travelleronline.posts.dtos.PostDTO;
-import com.example.travelleronline.reactions.LikesDislikesDTO;
+import com.example.travelleronline.reactions.dto.LikesDislikesDTO;
 import com.example.travelleronline.users.dtos.UserIdNamesPhotoDTO;
 import com.example.travelleronline.posts.dtos.PostCreationDTO;
 import com.example.travelleronline.general.MasterController;
