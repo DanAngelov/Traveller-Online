@@ -19,33 +19,33 @@ public class PostController extends MasterController {
     @Autowired
     private PostService postService;
 
+    @PostMapping("/posts")
+    public PostCreationDTO createPost(@RequestBody PostCreationDTO dto, HttpSession session) {
+        int uid = getUserId(session);
+        return postService.createPost(dto, uid);
+    }
+
     @GetMapping("/posts/{pid}")
     public PostDTO getPostById(@PathVariable int pid) {
         return postService.getPost(pid);
     }
 
-    @PostMapping("/posts")
-    public PostCreationDTO createPost(@RequestBody PostCreationDTO dto, HttpSession session){
-        int uid = getUserId(session);
-        return postService.createPost(dto, uid);
-    }
-
-    @GetMapping("/posts/filter")
-    public List<PostFilterDTO> filterPosts(@RequestParam String searchBy,
-    @RequestParam String value, @RequestParam String orderBy,
-    @RequestParam int pageNumber, @RequestParam int rowsNumber){
-        return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
-    }
-
     @GetMapping("/posts/categories")
     public List<PostFilterDTO> getPostsByCategory(@RequestParam String category,
-                                            @RequestParam int pageNumber,
-                                            @RequestParam int rowsNumber){
+                                                  @RequestParam int pageNumber,
+                                                  @RequestParam int rowsNumber) {
         return postService.getPostsByCategory(category, pageNumber, rowsNumber);
     }
 
+    @PutMapping("/posts/{pid}")
+    public void editPost(@PathVariable int pid, @RequestBody PostEditDTO dto,
+                         HttpSession session) {
+        int uid = getUserId(session);
+        postService.editPost(pid, dto, uid);
+    }
+
     @DeleteMapping("/posts/{pid}")
-    public void deletePostById(@PathVariable int pid, HttpSession session){
+    public void deletePostById(@PathVariable int pid, HttpSession session) {
         int uid = getUserId(session);
         postService.deletePostById(pid, uid);
     }
@@ -58,11 +58,26 @@ public class PostController extends MasterController {
         postService.tagUserToPost(pid, uid, sessionUserId);
     }
 
-    @PutMapping("/posts/{pid}")
-    public void editPost(@PathVariable int pid, @RequestBody PostEditDTO dto,
-                         HttpSession session) {
+    // removes old reaction after following visit
+    @PutMapping("/posts/{pid}/react")
+    public LikesDislikesDTO reactTo(@PathVariable int pid,
+                                    @RequestParam("reaction") String reaction,
+                                    HttpSession session) {
         int uid = getUserId(session);
-        postService.editPost(pid, dto, uid);
+        return postService.reactTo(uid, pid, reaction);
+    }
+
+    @GetMapping("/posts/{pid}/users")
+    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid,
+                                                        @RequestParam("reaction") String reaction) {
+        return postService.getUsersWhoReacted(pid, reaction);
+    }
+
+    @GetMapping("/posts/filter")
+    public List<PostFilterDTO> filterPosts(@RequestParam String searchBy,
+                                           @RequestParam String value, @RequestParam String orderBy,
+                                           @RequestParam int pageNumber, @RequestParam int rowsNumber) {
+        return postService.filterPosts(searchBy, value, orderBy, pageNumber, rowsNumber);
     }
 
     // News Feed
@@ -80,20 +95,5 @@ public class PostController extends MasterController {
                                             @RequestParam int rowsNumber) {
         return postService.getPostsOfUser(uid, pageNumber, rowsNumber);
     }
-
-    @PutMapping("/posts/{pid}/react")
-    public LikesDislikesDTO reactTo(@PathVariable int pid,
-                                    @RequestParam("reaction") String reaction,
-                                    HttpSession session) {
-        int uid = getUserId(session);
-        return postService.reactTo(uid, pid, reaction);
-    }
-
-    @GetMapping("/posts/{pid}/users")
-    public List<UserIdNamesPhotoDTO> getUsersWhoReacted(@PathVariable int pid,
-                                    @RequestParam("reaction") String reaction) {
-        return postService.getUsersWhoReacted(pid, reaction);
-    }
-
 
 }

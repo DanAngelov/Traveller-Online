@@ -14,12 +14,11 @@ public class HashtagService extends MasterService {
     private static final int HASHTAG_LENGTH_MAX = 50;
 
     @Transactional
-    void addHashtagToPost(int pid, HashtagDTO hashtag, int uid) {
+    void addHashtagToPost(Post post, HashtagDTO hashtag) {
         validateHashtagName(hashtag.getName());
-        Post post = validatePostOwner(pid, uid);
         for (Hashtag g : post.getPostHashtags()) {
             if(g.getName().equals(hashtag.getName())) {
-                throw new BadRequestException("Hashtag already included in post");
+                throw new BadRequestException("The hashtag is already included in the post.");
             }
         }
         Hashtag tag = hashtagRepository.findByName(hashtag.getName());

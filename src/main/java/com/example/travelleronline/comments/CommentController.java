@@ -18,16 +18,9 @@ public class CommentController extends MasterController {
     @Autowired
     private CommentService commentService;
 
-    @PostMapping("/comments/{cid}")
-    public CommentWithParentDTO respondToComment(@PathVariable int cid,
-                                 @RequestBody CommentRequestDTO dto, HttpSession session) {
-        int uid = getUserId(session);
-        return commentService.respondToComment(cid, uid, dto);
-    }
-
     @PostMapping("/posts/{pid}/comments")
     public CommentWithParentDTO createComment(@PathVariable int pid,
-                              @RequestBody CommentRequestDTO dto, HttpSession session) {
+                                              @RequestBody CommentRequestDTO dto, HttpSession session) {
         int uid = getUserId(session);
         return commentService.createComment(pid, dto, uid);
     }
@@ -51,6 +44,14 @@ public class CommentController extends MasterController {
         commentService.deleteAllComments(pid, uid);
     }
 
+    @PostMapping("/comments/{cid}")
+    public CommentWithParentDTO respondToComment(@PathVariable int cid,
+                                 @RequestBody CommentRequestDTO dto, HttpSession session) {
+        int uid = getUserId(session);
+        return commentService.respondToComment(cid, uid, dto);
+    }
+
+    // removes old reaction after following visit
     @PutMapping("/comments/{cid}/react")
     public LikesDislikesDTO reactTo(@PathVariable int cid,
                                     @RequestParam String reaction, HttpSession session) {

@@ -8,6 +8,7 @@ import com.example.travelleronline.general.exceptions.BadRequestException;
 import com.example.travelleronline.general.exceptions.NotFoundException;
 import com.example.travelleronline.general.exceptions.UnauthorizedException;
 import com.example.travelleronline.hashtags.HashtagRepository;
+import com.example.travelleronline.media.PostImage;
 import com.example.travelleronline.media.PostImageRepository;
 import com.example.travelleronline.posts.Post;
 import com.example.travelleronline.posts.PostRepository;
@@ -68,7 +69,12 @@ public abstract class MasterService {
                 .orElseThrow(() -> new NotFoundException("Comment not found."));
     }
 
-    protected Post validatePostOwner(int pid, int uid) {
+    protected PostImage getPostImageById(int id) {
+        return postImageRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Post image not found."));
+    }
+
+    public Post validatePostOwner(int pid, int uid) {
         Post post = getPostById(pid);
         if(post.getOwner().getUserId() != uid) {
             throw new UnauthorizedException("You are not post's owner.");

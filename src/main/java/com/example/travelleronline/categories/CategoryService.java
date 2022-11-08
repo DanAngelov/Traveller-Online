@@ -17,12 +17,11 @@ public class CategoryService extends MasterService {
 
     CategoryDTO createCategory(CategoryDTO dto){
         validateCategoryName(dto.getName());
-        Category c = new Category();
-        c.setName(dto.getName());
-        categoryRepository.save(c);
+        Category category = new Category();
+        category.setName(dto.getName());
+        categoryRepository.save(category);
         return dto;
     }
-
 
     List<CategoryDTO> getAllCategories(){
         List<Category> categories = categoryRepository.findAll();
@@ -39,11 +38,11 @@ public class CategoryService extends MasterService {
         return dto;
     }
 
+    // Soft delete
     void deleteCategoryById(int cid) {
-        Category c = getCategoryById(cid);
-        // Soft delete
-        c.setName("Deleted category" + System.nanoTime());
-        categoryRepository.save(c);
+        Category category = getCategoryById(cid);
+        category.setName("Deleted category" + System.nanoTime());
+        categoryRepository.save(category);
     }
 
     private void validateCategoryName(String category){

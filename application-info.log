@@ -1,25 +1,26 @@
-22/11/07 22:33:20.818 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-22/11/07 22:33:20.993 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 153 ms. Found 8 JPA repository interfaces.
-22/11/07 22:33:21.745 INFO  o.s.b.w.e.tomcat.TomcatWebServer       - Tomcat initialized with port(s): 7000 (http)
-22/11/07 22:33:21.759 INFO  o.a.coyote.http11.Http11NioProtocol    - Initializing ProtocolHandler ["http-nio-7000"]
-22/11/07 22:33:21.761 INFO  o.apache.catalina.core.StandardService - Starting service [Tomcat]
-22/11/07 22:33:21.762 INFO  o.apache.catalina.core.StandardEngine  - Starting Servlet engine: [Apache Tomcat/9.0.65]
-22/11/07 22:33:21.943 INFO  o.a.c.c.C.[Tomcat].[localhost].[/]     - Initializing Spring embedded WebApplicationContext
-22/11/07 22:33:21.944 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2248 ms
-22/11/07 22:33:22.256 INFO  o.h.jpa.internal.util.LogHelper        - HHH000204: Processing PersistenceUnitInfo [name: default]
-22/11/07 22:33:22.358 INFO  org.hibernate.Version                  - HHH000412: Hibernate ORM core version 5.6.11.Final
-22/11/07 22:33:22.654 INFO  o.hibernate.annotations.common.Version - HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-22/11/07 22:33:22.977 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Starting...
-22/11/07 22:33:25.332 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Start completed.
-22/11/07 22:33:25.369 INFO  org.hibernate.dialect.Dialect          - HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
-22/11/07 22:33:26.934 INFO  o.h.e.t.j.p.i.JtaPlatformInitiator     - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-22/11/07 22:33:26.950 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-22/11/07 22:33:28.306 WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-22/11/07 22:33:28.729 INFO  o.a.coyote.http11.Http11NioProtocol    - Starting ProtocolHandler ["http-nio-7000"]
-22/11/07 22:33:28.759 INFO  o.s.b.w.e.tomcat.TomcatWebServer       - Tomcat started on port(s): 7000 (http) with context path ''
-22/11/07 22:33:35.919 INFO  o.a.c.c.C.[Tomcat].[localhost].[/]     - Initializing Spring DispatcherServlet 'dispatcherServlet'
-22/11/07 22:33:35.921 INFO  o.s.web.servlet.DispatcherServlet      - Initializing Servlet 'dispatcherServlet'
-22/11/07 22:33:35.923 INFO  o.s.web.servlet.DispatcherServlet      - Completed initialization in 2 ms
-22/11/07 22:35:16.179 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-22/11/07 22:35:16.182 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Shutdown initiated...
-22/11/07 22:35:16.198 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Shutdown completed.
+22/11/08 10:09:25.590 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+22/11/08 10:09:25.743 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 137 ms. Found 8 JPA repository interfaces.
+22/11/08 10:09:26.469 INFO  o.s.b.w.e.tomcat.TomcatWebServer       - Tomcat initialized with port(s): 7000 (http)
+22/11/08 10:09:26.469 INFO  o.a.coyote.http11.Http11NioProtocol    - Initializing ProtocolHandler ["http-nio-7000"]
+22/11/08 10:09:26.469 INFO  o.apache.catalina.core.StandardService - Starting service [Tomcat]
+22/11/08 10:09:26.469 INFO  o.apache.catalina.core.StandardEngine  - Starting Servlet engine: [Apache Tomcat/9.0.65]
+22/11/08 10:09:26.656 INFO  o.a.c.c.C.[Tomcat].[localhost].[/]     - Initializing Spring embedded WebApplicationContext
+22/11/08 10:09:26.656 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2110 ms
+22/11/08 10:09:26.896 INFO  o.h.jpa.internal.util.LogHelper        - HHH000204: Processing PersistenceUnitInfo [name: default]
+22/11/08 10:09:26.978 INFO  org.hibernate.Version                  - HHH000412: Hibernate ORM core version 5.6.11.Final
+22/11/08 10:09:27.172 INFO  o.hibernate.annotations.common.Version - HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+22/11/08 10:09:27.313 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Starting...
+22/11/08 10:09:27.865 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Start completed.
+22/11/08 10:09:27.895 INFO  org.hibernate.dialect.Dialect          - HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+22/11/08 10:09:29.239 INFO  o.h.e.t.j.p.i.JtaPlatformInitiator     - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+22/11/08 10:09:29.250 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+22/11/08 10:09:30.544 WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+22/11/08 10:09:30.936 INFO  o.a.coyote.http11.Http11NioProtocol    - Starting ProtocolHandler ["http-nio-7000"]
+22/11/08 10:09:30.967 INFO  o.s.b.w.e.tomcat.TomcatWebServer       - Tomcat started on port(s): 7000 (http) with context path ''
+22/11/08 10:11:26.721 INFO  o.a.c.c.C.[Tomcat].[localhost].[/]     - Initializing Spring DispatcherServlet 'dispatcherServlet'
+22/11/08 10:11:26.721 INFO  o.s.web.servlet.DispatcherServlet      - Initializing Servlet 'dispatcherServlet'
+22/11/08 10:11:26.724 INFO  o.s.web.servlet.DispatcherServlet      - Completed initialization in 3 ms
+22/11/08 10:11:27.072 WARN  o.a.c.util.SessionIdGeneratorBase      - Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [101] milliseconds.
+22/11/08 10:13:27.140 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+22/11/08 10:13:27.145 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Shutdown initiated...
+22/11/08 10:13:27.161 INFO  com.zaxxer.hikari.HikariDataSource     - HikariPool-1 - Shutdown completed.
